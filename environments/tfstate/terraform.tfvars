@@ -1,0 +1,7 @@
+aws_region          = "eu-central-1"
+state_bucket_name   = "xpto-terraform-state"
+dynamodb_table_name = "xpto-terraform-locks"
+environment         = "tfstate"
+project             = "terraform-state-management"
+cost_center         = "infrastructure"
+data_classification = "confidential"
