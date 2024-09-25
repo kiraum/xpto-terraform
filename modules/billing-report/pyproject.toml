@@ -1,0 +1,28 @@
+[project]
+name = "aws-cost-explorer-lambda"
+version = "0.1.0"
+description = "AWS Cost Explorer Lambda function to report daily costs"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = ["kiraum <tfgoncalves@xpto.it>"]
+dependencies = [
+    "boto3",
+    "black",
+    "isort",
+    "pylint",
+    "ruff",
+    "uv",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pylint.messages_control]
+
+[tool.pylint.format]
+max-line-length = "100"
