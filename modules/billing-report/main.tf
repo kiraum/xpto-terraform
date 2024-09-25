@@ -16,6 +16,10 @@ resource "aws_lambda_function" "billing_report" {
       SNS_TOPIC_ARN = aws_sns_topic.billing_report.arn
     }
   }
+
+  tags = {
+    Name = var.lambda_function_name
+  }
 }
 
 # Create ZIP archive for Lambda function
@@ -80,9 +84,13 @@ resource "aws_iam_role_policy" "lambda_policy" {
 
 # Create CloudWatch event rule for daily trigger
 resource "aws_cloudwatch_event_rule" "daily_trigger" {
-  name                = "daily-billing-report-trigger"
+  name                = var.ruler_name
   description         = "Triggers the billing report Lambda function daily at 7 AM CEST"
   schedule_expression = "cron(0 5 * * ? *)"  # 7 AM CEST is 5 AM UTC
+
+  tags = {
+    Name = var.ruler_name
+  }
 }
 
 # Set Lambda function as target for CloudWatch event
@@ -104,6 +112,10 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 # Create SNS topic for billing report
 resource "aws_sns_topic" "billing_report" {
   name = var.sns_topic_name
+
+  tags = {
+    Name = var.sns_topic_name
+  }
 }
 
 # Create email subscription for SNS topic
@@ -172,5 +184,25 @@ resource "aws_scheduler_schedule" "daily_billing_report" {
   target {
     arn      = aws_lambda_function.billing_report.arn
     role_arn = aws_iam_role.scheduler_role.arn
+  }
+}
+
+resource "aws_kms_key" "lambda_key" {
+  description             = "Default key that protects my Lambda functions when no other key is defined"
+  enable_key_rotation     = true
+  bypass_policy_lockout_safety_check = false
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+resource "aws_kms_key" "sns_key" {
+  description             = "Default key that protects my SNS data when no other key is defined"
+  enable_key_rotation     = true
+  bypass_policy_lockout_safety_check = false
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
   }
 }
