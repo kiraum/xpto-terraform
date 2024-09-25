@@ -14,3 +14,9 @@ variable "email_subscription" {
   description = "Email address for SNS subscription"
   type        = string
 }
+
+variable "ruler_name" {
+  description = "EventBridge ruler name"
+  type        = string
+  default     = "daily-billing-report-ruler"
+}
