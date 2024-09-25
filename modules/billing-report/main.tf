@@ -109,6 +109,16 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
   source_arn    = aws_cloudwatch_event_rule.daily_trigger.arn
 }
 
+# Create CloudWatch Log Group for Lambda function
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.billing_report.function_name}"
+  retention_in_days = 7
+
+  tags = {
+    Name = "${var.lambda_function_name}-logs"
+  }
+}
+
 # Create SNS topic for billing report
 resource "aws_sns_topic" "billing_report" {
   name = var.sns_topic_name
