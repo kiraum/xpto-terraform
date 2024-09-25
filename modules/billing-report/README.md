@@ -2,6 +2,8 @@
 
 The `billing-report` module sets up an AWS Lambda function that generates daily AWS cost reports and sends them via SNS.
 
+*As a primarily free tier user, this Lambda function serves as an additional safeguard against unexpected costs, complementing the existing alerts set up in Cost Explorer.*
+
 ### Features
 
 - Daily execution using EventBridge scheduler
