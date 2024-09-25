@@ -86,7 +86,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
 resource "aws_cloudwatch_event_rule" "daily_trigger" {
   name                = var.ruler_name
   description         = "Triggers the billing report Lambda function daily at 7 AM CEST"
-  schedule_expression = "cron(0 5 * * ? *)"  # 7 AM CEST is 5 AM UTC
+  schedule_expression = "cron(0 5 * * ? *)" # 7 AM CEST is 5 AM UTC
 
   tags = {
     Name = var.ruler_name
@@ -189,7 +189,7 @@ resource "aws_scheduler_schedule" "daily_billing_report" {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(0 5 * * ? *)"  # 7 AM CEST is 5 AM UTC
+  schedule_expression = "cron(0 5 * * ? *)" # 7 AM CEST is 5 AM UTC
 
   target {
     arn      = aws_lambda_function.billing_report.arn
@@ -198,8 +198,8 @@ resource "aws_scheduler_schedule" "daily_billing_report" {
 }
 
 resource "aws_kms_key" "lambda_key" {
-  description             = "Default key that protects my Lambda functions when no other key is defined"
-  enable_key_rotation     = true
+  description                        = "Default key that protects my Lambda functions when no other key is defined"
+  enable_key_rotation                = true
   bypass_policy_lockout_safety_check = false
 
   lifecycle {
@@ -208,8 +208,8 @@ resource "aws_kms_key" "lambda_key" {
 }
 
 resource "aws_kms_key" "sns_key" {
-  description             = "Default key that protects my SNS data when no other key is defined"
-  enable_key_rotation     = true
+  description                        = "Default key that protects my SNS data when no other key is defined"
+  enable_key_rotation                = true
   bypass_policy_lockout_safety_check = false
 
   lifecycle {

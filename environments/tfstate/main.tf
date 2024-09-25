@@ -103,8 +103,8 @@ resource "aws_dynamodb_table" "terraform_locks" {
 }
 
 resource "aws_kms_key" "dynamodb_key" {
-  description             = "Default key that protects my DynamoDB data when no other key is defined"
-  enable_key_rotation     = true
+  description                        = "Default key that protects my DynamoDB data when no other key is defined"
+  enable_key_rotation                = true
   bypass_policy_lockout_safety_check = false
 
   lifecycle {
