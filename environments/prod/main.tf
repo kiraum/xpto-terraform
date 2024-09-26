@@ -19,3 +19,24 @@ module "billing_report" {
   sns_topic_name       = "root-account-topic"
   email_subscription   = "tfgoncalves@xpto.it"
 }
+
+module "route53" {
+  source = "../../modules/route53"
+
+  hosted_zones = {
+    "kiraum_it" = {
+      domain_name = "kiraum.it"
+      comment     = "kiraum.it hosted zone"
+      records = [
+        {
+          name    = "www"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["example.org"]
+        }
+      ]
+    }
+  }
+
+}
+
