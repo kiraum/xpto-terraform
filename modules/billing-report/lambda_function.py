@@ -1,4 +1,4 @@
-"""AWS Cost Explorer Lambda function to report daily costs."""
+"""AWS Cost Explorer Lambda function to report costs for various time periods."""
 
 import datetime
 import os
@@ -6,47 +6,135 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
+COST_THRESHOLD = float(os.environ.get("COST_THRESHOLD", "0.01"))
 
-def lambda_handler(event, context):  # pylint: disable=unused-argument
+
+def calculate_time_periods(time_period, current_date):
     """
-    Handle Lambda function invocation.
+    Calculate start and end dates for the given time period.
 
     Args:
-        event (dict): Lambda function invocation event
-        context (object): Lambda function context
+        time_period (str): The time period to calculate (daily, weekly, monthly, yearly).
+        current_date (datetime.date): The current date.
 
     Returns:
-        dict: Response containing status code and message
-    """
-    ce = boto3.client("ce")
-    end = datetime.datetime.utcnow().date()
-    start = end - datetime.timedelta(days=1)
+        tuple: start, end, compare_start, compare_end dates.
 
-    try:
-        response = ce.get_cost_and_usage(
-            TimePeriod={"Start": start.isoformat(), "End": end.isoformat()},
-            Granularity="DAILY",
-            Metrics=["UnblendedCost"],
+    Raises:
+        ValueError: If an invalid time period is provided.
+    """
+    periods = {
+        "daily": (1, 1),
+        "weekly": (7, 7),
+        "monthly": ("month", 1),
+        "yearly": ("year", "year"),
+    }
+
+    if time_period not in periods:
+        raise ValueError(
+            f"Invalid time period: {time_period}. Must be daily, weekly, monthly, or yearly."
         )
 
-        if response["ResultsByTime"]:
-            total_cost = response["ResultsByTime"][0]["Total"]["UnblendedCost"]["Amount"]
-            unit = response["ResultsByTime"][0]["Total"]["UnblendedCost"]["Unit"]
-            message = f"Total AWS cost for {start.isoformat()}: {total_cost} {unit}"
-        else:
-            message = "No cost data available for the specified time period."
-    except ClientError as exc:
-        message = f"An error occurred: {str(exc)}"
-    except Exception as exc:  # pylint: disable=broad-except
-        message = f"An unexpected error occurred: {str(exc)}"
+    delta, compare_delta = periods[time_period]
 
-    print(message)
-    send_sns(message)
+    if time_period == "daily":
+        start = current_date - datetime.timedelta(days=1)
+        end = start
+        compare_start = start - datetime.timedelta(days=1)
+        compare_end = compare_start
+    elif isinstance(delta, int):
+        start = current_date - datetime.timedelta(days=delta)
+        end = current_date
+        compare_start = start - datetime.timedelta(days=compare_delta)
+        compare_end = start
+    else:
+        start = current_date.replace(**{delta: 1})
+        end = current_date
+        compare_start = (start - datetime.timedelta(days=1)).replace(**{delta: 1})
+        compare_end = start
 
-    return {
-        "statusCode": 200 if "error" not in message.lower() else 500,
-        "body": message,
+    return start, end, compare_start, compare_end
+
+
+def process_cost_data(response, compare_response):
+    """
+    Process the cost data from AWS Cost Explorer responses.
+
+    Args:
+        response (dict): The response from AWS Cost Explorer for the current period.
+        compare_response (dict): The response from AWS Cost Explorer for the comparison period.
+
+    Returns:
+        tuple: current_costs, compare_costs, unit. Returns (None, None, None) if no data is available.
+    """
+    if not response["ResultsByTime"] or not compare_response["ResultsByTime"]:
+        return None, None, None
+
+    current_costs = sum(
+        float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    )
+    compare_costs = sum(
+        float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in compare_response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    )
+
+    unit = next(
+        (
+            result["Groups"][0]["Metrics"]["UnblendedCost"]["Unit"]
+            for result in response["ResultsByTime"]
+            if result.get("Groups")
+        ),
+        "USD",
+    )
+
+    return current_costs, compare_costs, unit
+
+
+def generate_cost_report(
+    time_period, start, end, current_costs, compare_costs, unit, response, compare_response
+):
+    """
+    Generate a detailed cost report.
+
+    Args:
+        time_period (str): The time period of the report.
+        start (datetime.date): The start date of the report.
+        end (datetime.date): The end date of the report.
+        current_costs (float): The total costs for the current period.
+        compare_costs (float): The total costs for the comparison period.
+        unit (str): The currency unit.
+        response (dict): The response from AWS Cost Explorer for the current period.
+        compare_response (dict): The response from AWS Cost Explorer for the comparison period.
+
+    Returns:
+        str: A formatted cost report message.
+    """
+    message = f"Total AWS cost for {time_period} ({start.isoformat()} to {end.isoformat()}): {current_costs:.7f} {unit}\n"
+    message += f"Previous {time_period} cost: {compare_costs:.7f} {unit}\n"
+    message += f"Difference: {current_costs - compare_costs:.7f} {unit}\n"
+    message += f"Threshold: {COST_THRESHOLD:.7f} {unit}\n\n"
+    message += "Breakdown by service:\n"
+
+    current_services = {
+        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in response["ResultsByTime"]
+        for group in result.get("Groups", [])
     }
+    previous_services = {
+        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in compare_response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    }
+
+    for service, cost in current_services.items():
+        if cost > 0:
+            previous_cost = previous_services.get(service, 0)
+            message += f"{service}: {cost:.7f} {unit} (Previous: {previous_cost:.7f} {unit})\n"
+
+    return message
 
 
 def send_sns(message):
@@ -55,14 +143,107 @@ def send_sns(message):
 
     Args:
         message (str): Message to be sent
+
+    Raises:
+        ClientError: If an error occurs while publishing to SNS.
     """
     sns = boto3.client("sns")
     sns_topic_arn = os.environ["SNS_TOPIC_ARN"]
 
     try:
-        response = sns.publish(
-            TopicArn=sns_topic_arn, Message=message, Subject="Daily AWS Cost Report"
-        )
+        response = sns.publish(TopicArn=sns_topic_arn, Message=message, Subject="AWS Cost Report")
         print(f"Message published to SNS. Message ID: {response['MessageId']}")
     except ClientError as e:
         print(f"An error occurred while publishing to SNS: {e}")
+
+
+def lambda_handler(event, context):
+    """
+    AWS Lambda function to report AWS costs for various time periods.
+
+    This function retrieves cost data from AWS Cost Explorer for a specified time period,
+    compares it with the previous period, and generates a cost report. If the cost exceeds
+    a predefined threshold, it sends a notification via SNS.
+
+    Args:
+        event (dict): The Lambda event object containing input parameters.
+            - time_period (str, optional): The time period for the cost report.
+              Valid values are 'daily', 'weekly', 'monthly', 'yearly'. Defaults to 'daily'.
+        context (object): The Lambda context object (not used in this function).
+
+    Returns:
+        dict: A dictionary containing the status code and response body.
+            - statusCode (int): HTTP status code (200 for success, 500 for errors).
+            - body (str): A message describing the result or error.
+
+    Raises:
+        ClientError: If there's an issue with the AWS Cost Explorer API.
+        ValueError: If an invalid time period is provided.
+        Exception: For any other unexpected errors.
+
+    Note:
+        - The function uses environment variables for configuration:
+          - COST_THRESHOLD: The cost threshold for sending notifications.
+          - SNS_TOPIC_ARN: The ARN of the SNS topic for notifications.
+        - Cost data is retrieved using the AWS Cost Explorer API.
+        - For daily reports, the function adjusts the date range to ensure full day coverage.
+    """
+    ce = boto3.client("ce")
+    time_period = event.get("time_period", "daily").lower()
+    current_date = datetime.datetime.utcnow().date()
+
+    try:
+        start, end, compare_start, compare_end = calculate_time_periods(time_period, current_date)
+
+        # For daily reports, we need to add one day to the end date to include the full day
+        if time_period == "daily":
+            end = end + datetime.timedelta(days=1)
+            compare_end = compare_end + datetime.timedelta(days=1)
+
+        response = ce.get_cost_and_usage(
+            TimePeriod={"Start": start.isoformat(), "End": end.isoformat()},
+            Granularity="DAILY",
+            Metrics=["UnblendedCost"],
+            GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
+        )
+        compare_response = ce.get_cost_and_usage(
+            TimePeriod={"Start": compare_start.isoformat(), "End": compare_end.isoformat()},
+            Granularity="DAILY",
+            Metrics=["UnblendedCost"],
+            GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
+        )
+
+        current_costs, compare_costs, unit = process_cost_data(response, compare_response)
+
+        if current_costs is None:
+            message = f"No cost data available for the specified {time_period} period."
+            return {"statusCode": 200, "body": message}
+
+        if current_costs > COST_THRESHOLD:
+            message = generate_cost_report(
+                time_period,
+                start,
+                end - datetime.timedelta(days=1),  # Adjust end date for report
+                current_costs,
+                compare_costs,
+                unit,
+                response,
+                compare_response,
+            )
+            print(message)
+            send_sns(message)
+        else:
+            message = f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({COST_THRESHOLD:.7f} {unit}). No notification sent."
+            print(message)
+
+        return {"statusCode": 200, "body": message}
+
+    except ClientError as exc:
+        message = f"An error occurred with the Cost Explorer API: {str(exc)}"
+    except ValueError as exc:
+        message = str(exc)
+    except Exception as exc:
+        message = f"An unexpected error occurred: {str(exc)}"
+        print(f"Full error details: {exc}")
+
+    return {"statusCode": 500, "body": message}

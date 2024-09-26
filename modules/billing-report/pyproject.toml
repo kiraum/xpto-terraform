@@ -23,6 +23,17 @@ profile = "black"
 line_length = 100
 
 [tool.pylint.messages_control]
+disable = [
+    "R0913",  # Too many arguments
+    "R0917",  # Too many positional arguments
+    "R0914",  # Too many local variables
+    "W0718",  # Catching too general exception Exception
+    "W0613",  # Unused argument
+]
+
+[tool.pylint.design]
+max-args = 8
+max-locals = 16
 
 [tool.pylint.format]
-max-line-length = "100"
+max-line-length = 120
