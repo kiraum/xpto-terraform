@@ -7,6 +7,45 @@ import boto3
 from botocore.exceptions import ClientError
 
 COST_THRESHOLD = float(os.environ.get("COST_THRESHOLD", "0.01"))
+DYNAMODB_TABLE = os.environ.get("DYNAMODB_TABLE", "CostExplorerProcessedDates")
+
+
+def get_last_processed_date(time_period):
+    """
+    Get the last processed date for the given time period from DynamoDB.
+
+    Args:
+        time_period (str): The time period to check (daily, weekly, monthly, yearly).
+
+    Returns:
+        str: The last processed date as an ISO format string, or None if not found.
+    """
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table(DYNAMODB_TABLE)
+
+    try:
+        response = table.get_item(Key={"time_period": time_period})
+        return response.get("Item", {}).get("last_processed_date")
+    except ClientError as e:
+        print(f"Error retrieving last processed date: {e}")
+        return None
+
+
+def update_last_processed_date(time_period, date):
+    """
+    Update the last processed date for the given time period in DynamoDB.
+
+    Args:
+        time_period (str): The time period to update (daily, weekly, monthly, yearly).
+        date (datetime.date): The date to set as the last processed date.
+    """
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table(DYNAMODB_TABLE)
+
+    try:
+        table.put_item(Item={"time_period": time_period, "last_processed_date": date.isoformat()})
+    except ClientError as e:
+        print(f"Error updating last processed date: {e}")
 
 
 def calculate_time_periods(time_period, current_date):
@@ -185,8 +224,10 @@ def lambda_handler(event, context):
         - The function uses environment variables for configuration:
           - COST_THRESHOLD: The cost threshold for sending notifications.
           - SNS_TOPIC_ARN: The ARN of the SNS topic for notifications.
+          - DYNAMODB_TABLE: The name of the DynamoDB table for tracking processed dates.
         - Cost data is retrieved using the AWS Cost Explorer API.
         - For daily reports, the function adjusts the date range to ensure full day coverage.
+        - The function uses DynamoDB to prevent duplicate processing of the same time period.
     """
     ce = boto3.client("ce")
     time_period = event.get("time_period", "daily").lower()
@@ -194,6 +235,14 @@ def lambda_handler(event, context):
 
     try:
         start, end, compare_start, compare_end = calculate_time_periods(time_period, current_date)
+
+        # Check if this period has already been processed
+        last_processed_date = get_last_processed_date(time_period)
+        if last_processed_date and last_processed_date >= end.isoformat():
+            return {
+                "statusCode": 200,
+                "body": f"Cost data for {time_period} ending on {end.isoformat()} has already been processed.",
+            }
 
         # For daily reports, we need to add one day to the end date to include the full day
         if time_period == "daily":
@@ -235,6 +284,9 @@ def lambda_handler(event, context):
         else:
             message = f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({COST_THRESHOLD:.7f} {unit}). No notification sent."
             print(message)
+
+        # Update the last processed date
+        update_last_processed_date(time_period, end - datetime.timedelta(days=1))
 
         return {"statusCode": 200, "body": message}
 
