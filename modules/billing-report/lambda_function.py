@@ -6,7 +6,12 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
-COST_THRESHOLD = float(os.environ.get("COST_THRESHOLD", "0.01"))
+# Configurable cost thresholds for different time periods
+DAILY_COST_THRESHOLD = float(os.environ.get("DAILY_COST_THRESHOLD", "0.01"))
+WEEKLY_COST_THRESHOLD = float(os.environ.get("WEEKLY_COST_THRESHOLD", "0.01"))
+MONTHLY_COST_THRESHOLD = float(os.environ.get("MONTHLY_COST_THRESHOLD", "0.01"))
+YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "0.01"))
+
 DYNAMODB_TABLE = os.environ.get("DYNAMODB_TABLE", "CostExplorerProcessedDates")
 
 
@@ -154,7 +159,15 @@ def generate_cost_report(
     message = f"Total AWS cost for {time_period} ({start.isoformat()} to {end.isoformat()}): {current_costs:.7f} {unit}\n"
     message += f"Previous {time_period} cost: {compare_costs:.7f} {unit}\n"
     message += f"Difference: {current_costs - compare_costs:.7f} {unit}\n"
-    message += f"Threshold: {COST_THRESHOLD:.7f} {unit}\n\n"
+
+    cost_threshold = {
+        "daily": DAILY_COST_THRESHOLD,
+        "weekly": WEEKLY_COST_THRESHOLD,
+        "monthly": MONTHLY_COST_THRESHOLD,
+        "yearly": YEARLY_COST_THRESHOLD,
+    }.get(time_period, DAILY_COST_THRESHOLD)
+
+    message += f"Threshold: {cost_threshold:.7f} {unit}\n\n"
     message += "Breakdown by service:\n"
 
     current_services = {
@@ -222,7 +235,8 @@ def lambda_handler(event, context):
 
     Note:
         - The function uses environment variables for configuration:
-          - COST_THRESHOLD: The cost threshold for sending notifications.
+          - DAILY_COST_THRESHOLD, WEEKLY_COST_THRESHOLD, MONTHLY_COST_THRESHOLD, YEARLY_COST_THRESHOLD:
+            The cost thresholds for sending notifications for each time period.
           - SNS_TOPIC_ARN: The ARN of the SNS topic for notifications.
           - DYNAMODB_TABLE: The name of the DynamoDB table for tracking processed dates.
         - Cost data is retrieved using the AWS Cost Explorer API.
@@ -268,7 +282,15 @@ def lambda_handler(event, context):
             message = f"No cost data available for the specified {time_period} period."
             return {"statusCode": 200, "body": message}
 
-        if current_costs > COST_THRESHOLD:
+        # Select the appropriate cost threshold based on the time period
+        cost_threshold = {
+            "daily": DAILY_COST_THRESHOLD,
+            "weekly": WEEKLY_COST_THRESHOLD,
+            "monthly": MONTHLY_COST_THRESHOLD,
+            "yearly": YEARLY_COST_THRESHOLD,
+        }.get(time_period, DAILY_COST_THRESHOLD)
+
+        if current_costs > cost_threshold:
             message = generate_cost_report(
                 time_period,
                 start,
@@ -282,7 +304,7 @@ def lambda_handler(event, context):
             print(message)
             send_sns(message)
         else:
-            message = f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({COST_THRESHOLD:.7f} {unit}). No notification sent."
+            message = f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
             print(message)
 
         # Update the last processed date
