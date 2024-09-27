@@ -5,9 +5,13 @@ variable "hosted_zones" {
     records = list(object({
       name    = string
       type    = string
-      ttl     = number
-      records = list(string)
+      ttl     = optional(number)
+      records = optional(list(string))
+      alias = optional(object({
+        name                   = string
+        zone_id                = string
+        evaluate_target_health = bool
+      }))
     }))
   }))
 }
-
