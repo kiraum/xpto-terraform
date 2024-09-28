@@ -1,0 +1,43 @@
+name: Terraform Lint and Format
+
+on:
+  push:
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+  pull_request:
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Format
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Init and Validate
+      run: |
+        find ./environments -type f \( -name "*.tf" -o -name "*.tfvars" \) -exec dirname {} \; | sort -u | while read dir; do
+          cd "$dir"
+          terraform init -backend=false
+          terraform validate
+          cd -
+        done
+
+    - name: Run tflint
+      uses: terraform-linters/setup-tflint@v4
+
+    - name: Run tflint
+      run: |
+        find ./environments -type f \( -name "*.tf" -o -name "*.tfvars" \) -exec dirname {} \; | sort -u | while read dir; do
+          cd "$dir"
+          tflint
+          cd -
+        done
