@@ -69,7 +69,7 @@ module "route53" {
         {
           name    = "www"
           type    = "CNAME"
-          ttl     = 300
+          ttl     = 301
           records = ["dpop20p5u4112.cloudfront.net"]
         }
       ]
