@@ -226,9 +226,9 @@ resource "aws_kms_key" "sns_key" {
 }
 
 resource "aws_dynamodb_table" "cost_explorer_processed_dates" {
-  name           = var.dynamodb_table_name
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "time_period"
+  name         = var.dynamodb_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "time_period"
 
   attribute {
     name = "time_period"

@@ -17,7 +17,7 @@ variable "cost_center" {
   type        = string
 }
 
-variable "data_classification" {
-  description = "Data classification for tagging"
-  type        = string
-}
+#variable "data_classification" {
+#  description = "Data classification for tagging"
+#  type        = string
+#}

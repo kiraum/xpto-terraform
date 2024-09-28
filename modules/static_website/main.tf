@@ -271,13 +271,17 @@ resource "aws_lambda_function" "disable_cloudfront" {
   handler          = "disable_cloudfront.lambda_handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   runtime          = "python3.12"
-  timeout          = 30
+  timeout          = 10
 
   environment {
     variables = {
       DISTRIBUTION_ID = aws_cloudfront_distribution.static_site.id
       SNS_TOPIC_ARN   = aws_sns_topic.budget_alert.arn
     }
+  }
+
+  tags = {
+    Name = "disable_cloudfront_distribution_${var.bucket_name}"
   }
 }
 
@@ -399,4 +403,16 @@ resource "aws_iam_role_policy" "lambda_permissions" {
       }
     ]
   })
+}
+
+resource "aws_cloudwatch_log_group" "disable_cloudfront_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.disable_cloudfront.function_name}"
+  retention_in_days = 7
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${aws_lambda_function.disable_cloudfront.function_name}-logs"
+    }
+  )
 }

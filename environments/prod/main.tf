@@ -4,11 +4,11 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Environment        = var.environment
-      ManagedBy          = "terraform"
-      Project            = var.project
-      CostCenter         = var.cost_center
-      DataClassification = var.data_classification
+      Environment = var.environment
+      ManagedBy   = "terraform"
+      Project     = var.project
+      CostCenter  = var.cost_center
+      # DataClassification = var.data_classification
     }
   }
 }
@@ -20,11 +20,11 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Environment        = var.environment
-      ManagedBy          = "terraform"
-      Project            = var.project
-      CostCenter         = var.cost_center
-      DataClassification = var.data_classification
+      Environment = var.environment
+      ManagedBy   = "terraform"
+      Project     = var.project
+      CostCenter  = var.cost_center
+      # DataClassification = var.data_classification
     }
   }
 }
