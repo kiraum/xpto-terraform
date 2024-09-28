@@ -20,3 +20,9 @@ variable "ruler_name" {
   type        = string
   default     = "daily-billing-report-ruler"
 }
+
+variable "dynamodb_table_name" {
+  description = "Name of the DynamoDB table for storing processed dates"
+  type        = string
+  default     = "CostExplorerProcessedDates"
+}

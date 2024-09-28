@@ -77,6 +77,14 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "sns:Publish"
         ]
         Resource = aws_sns_topic.billing_report.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem"
+        ]
+        Resource = "arn:aws:dynamodb:*:*:table/${var.dynamodb_table_name}"
       }
     ]
   })
@@ -214,5 +222,20 @@ resource "aws_kms_key" "sns_key" {
 
   lifecycle {
     ignore_changes = [tags, tags_all]
+  }
+}
+
+resource "aws_dynamodb_table" "cost_explorer_processed_dates" {
+  name           = var.dynamodb_table_name
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "time_period"
+
+  attribute {
+    name = "time_period"
+    type = "S"
+  }
+
+  tags = {
+    Name = var.dynamodb_table_name
   }
 }
