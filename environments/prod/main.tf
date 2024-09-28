@@ -45,6 +45,8 @@ module "billing_report" {
   lambda_function_name = "billing-report-lambda"
   sns_topic_name       = "root-account-topic"
   email_subscription   = "tfgoncalves@xpto.it"
+  dynamodb_table_name  = "CostExplorerProcessedDates"
+  ruler_name           = "billing-report-daily-schedule"
 }
 
 module "route53" {
