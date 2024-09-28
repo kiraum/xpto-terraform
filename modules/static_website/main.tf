@@ -256,3 +256,147 @@ resource "aws_cloudfront_origin_access_control" "static_site" {
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 }
+
+# Lambda Function
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_file = "${path.module}/disable_cloudfront.py"
+  output_path = "${path.module}/disable_cloudfront_lambda.zip"
+}
+
+resource "aws_lambda_function" "disable_cloudfront" {
+  filename         = data.archive_file.lambda_zip.output_path
+  function_name    = "disable_cloudfront_distribution_${var.bucket_name}"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "disable_cloudfront.lambda_handler"
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  runtime          = "python3.12"
+  timeout          = 30
+
+  environment {
+    variables = {
+      DISTRIBUTION_ID = aws_cloudfront_distribution.static_site.id
+      SNS_TOPIC_ARN   = aws_sns_topic.budget_alert.arn
+    }
+  }
+}
+
+resource "aws_iam_role" "lambda_exec" {
+  name = "disable_cloudfront_lambda_role_${var.bucket_name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role       = aws_iam_role.lambda_exec.name
+}
+
+resource "aws_iam_role_policy" "cloudfront_access" {
+  name = "cloudfront_access_${var.bucket_name}"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "cloudfront:UpdateDistribution",
+        "cloudfront:GetDistribution"
+      ]
+      Resource = aws_cloudfront_distribution.static_site.arn
+    }]
+  })
+}
+
+# SNS Topic for notifications
+resource "aws_sns_topic" "budget_alert" {
+  name = "cloudfront-budget-alert-${var.bucket_name}"
+}
+
+# Budget
+resource "aws_budgets_budget" "cloudfront" {
+  name         = "cloudfront-monthly-budget-${var.bucket_name}"
+  budget_type  = "COST"
+  limit_amount = "1"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  cost_filter {
+    name   = "Service"
+    values = ["Amazon CloudFront"]
+  }
+
+  notification {
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 80
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alert.arn]
+  }
+}
+
+# EventBridge Rule
+resource "aws_cloudwatch_event_rule" "budget_alert" {
+  name        = "cloudfront-budget-alert-${var.bucket_name}"
+  description = "Trigger when CloudFront budget threshold is exceeded"
+
+  event_pattern = jsonencode({
+    source      = ["aws.budgets"]
+    detail-type = ["Budget Threshold Exceeded"]
+    detail = {
+      budgetName = [aws_budgets_budget.cloudfront.name]
+    }
+  })
+}
+
+# EventBridge Target
+resource "aws_cloudwatch_event_target" "lambda" {
+  rule      = aws_cloudwatch_event_rule.budget_alert.name
+  target_id = "TriggerLambda"
+  arn       = aws_lambda_function.disable_cloudfront.arn
+}
+
+# Lambda permission for EventBridge
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id  = "AllowEventBridgeInvoke"
+  function_name = aws_lambda_function.disable_cloudfront.function_name
+  action        = "lambda:InvokeFunction"
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.budget_alert.arn
+}
+
+resource "aws_iam_role_policy" "lambda_permissions" {
+  name = "cloudfront_sns_access_${var.bucket_name}"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudfront:GetDistributionConfig",
+          "cloudfront:UpdateDistribution"
+        ]
+        Resource = aws_cloudfront_distribution.static_site.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.budget_alert.arn
+      }
+    ]
+  })
+}

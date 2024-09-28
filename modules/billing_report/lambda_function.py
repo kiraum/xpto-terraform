@@ -48,7 +48,9 @@ def update_last_processed_date(time_period, date):
     table = dynamodb.Table(DYNAMODB_TABLE)
 
     try:
-        table.put_item(Item={"time_period": time_period, "last_processed_date": date.isoformat()})
+        table.put_item(
+            Item={"time_period": time_period, "last_processed_date": date.isoformat()}
+        )
     except ClientError as e:
         print(f"Error updating last processed date: {e}")
 
@@ -138,7 +140,14 @@ def process_cost_data(response, compare_response):
 
 
 def generate_cost_report(
-    time_period, start, end, current_costs, compare_costs, unit, response, compare_response
+    time_period,
+    start,
+    end,
+    current_costs,
+    compare_costs,
+    unit,
+    response,
+    compare_response,
 ):
     """
     Generate a detailed cost report.
@@ -184,7 +193,9 @@ def generate_cost_report(
     for service, cost in current_services.items():
         if cost > 0:
             previous_cost = previous_services.get(service, 0)
-            message += f"{service}: {cost:.7f} {unit} (Previous: {previous_cost:.7f} {unit})\n"
+            message += (
+                f"{service}: {cost:.7f} {unit} (Previous: {previous_cost:.7f} {unit})\n"
+            )
 
     return message
 
@@ -203,7 +214,9 @@ def send_sns(message):
     sns_topic_arn = os.environ["SNS_TOPIC_ARN"]
 
     try:
-        response = sns.publish(TopicArn=sns_topic_arn, Message=message, Subject="AWS Cost Report")
+        response = sns.publish(
+            TopicArn=sns_topic_arn, Message=message, Subject="AWS Cost Report"
+        )
         print(f"Message published to SNS. Message ID: {response['MessageId']}")
     except ClientError as e:
         print(f"An error occurred while publishing to SNS: {e}")
@@ -248,7 +261,9 @@ def lambda_handler(event, context):
     current_date = datetime.datetime.utcnow().date()
 
     try:
-        start, end, compare_start, compare_end = calculate_time_periods(time_period, current_date)
+        start, end, compare_start, compare_end = calculate_time_periods(
+            time_period, current_date
+        )
 
         # Check if this period has already been processed
         last_processed_date = get_last_processed_date(time_period)
@@ -270,13 +285,18 @@ def lambda_handler(event, context):
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
         compare_response = ce.get_cost_and_usage(
-            TimePeriod={"Start": compare_start.isoformat(), "End": compare_end.isoformat()},
+            TimePeriod={
+                "Start": compare_start.isoformat(),
+                "End": compare_end.isoformat(),
+            },
             Granularity="DAILY",
             Metrics=["UnblendedCost"],
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
 
-        current_costs, compare_costs, unit = process_cost_data(response, compare_response)
+        current_costs, compare_costs, unit = process_cost_data(
+            response, compare_response
+        )
 
         if current_costs is None:
             message = f"No cost data available for the specified {time_period} period."

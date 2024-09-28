@@ -23,7 +23,9 @@ def mock_boto3_client(service_name):
     if service_name == "ce":
         mock_ce = MagicMock()
         mock_ce.get_cost_and_usage.return_value = {
-            "ResultsByTime": [{"Total": {"UnblendedCost": {"Amount": "100.00", "Unit": "USD"}}}]
+            "ResultsByTime": [
+                {"Total": {"UnblendedCost": {"Amount": "100.00", "Unit": "USD"}}}
+            ]
         }
         return mock_ce
     if service_name == "sns":
