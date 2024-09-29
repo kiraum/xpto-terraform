@@ -106,29 +106,100 @@ resource "aws_iam_role_policy" "lambda_policy" {
 
 # Create CloudWatch event rule for daily trigger
 resource "aws_cloudwatch_event_rule" "daily_trigger" {
-  name                = var.ruler_name
+  name                = "billing-report-daily-schedule"
   description         = "Triggers the billing report Lambda function daily at 7 AM CEST"
   schedule_expression = "cron(0 5 * * ? *)" # 7 AM CEST is 5 AM UTC
-
   tags = {
-    Name = var.ruler_name
+    Name = "billing-report-daily-schedule"
   }
 }
 
-# Set Lambda function as target for CloudWatch event
-resource "aws_cloudwatch_event_target" "lambda_target" {
+# Create CloudWatch event rule for weekly trigger
+resource "aws_cloudwatch_event_rule" "weekly_trigger" {
+  name                = "billing-report-weekly-schedule"
+  description         = "Triggers the billing report Lambda function weekly on Mondays at 7 AM CEST"
+  schedule_expression = "cron(0 5 ? * MON *)" # 7 AM CEST on Mondays
+  tags = {
+    Name = "billing-report-weekly-schedule"
+  }
+}
+
+# Create CloudWatch event rule for monthly trigger
+resource "aws_cloudwatch_event_rule" "monthly_trigger" {
+  name                = "billing-report-monthly-schedule"
+  description         = "Triggers the billing report Lambda function monthly on the 1st day at 7 AM CEST"
+  schedule_expression = "cron(0 5 1 * ? *)" # 7 AM CEST on the 1st day of each month
+  tags = {
+    Name = "billing-report-monthly-schedule"
+  }
+}
+
+# Create CloudWatch event rule for yearly trigger
+resource "aws_cloudwatch_event_rule" "yearly_trigger" {
+  name                = "billing-report-yearly-schedule"
+  description         = "Triggers the billing report Lambda function yearly on January 1st at 7 AM CEST"
+  schedule_expression = "cron(0 5 1 1 ? *)" # 7 AM CEST on January 1st
+  tags = {
+    Name = "billing-report-yearly-schedule"
+  }
+}
+
+# Set Lambda function as target for CloudWatch events
+resource "aws_cloudwatch_event_target" "daily_lambda_target" {
   rule      = aws_cloudwatch_event_rule.daily_trigger.name
-  target_id = "TriggerBillingReportLambda"
+  target_id = "TriggerBillingReportLambdaDaily"
+  arn       = aws_lambda_function.billing_report.arn
+}
+
+resource "aws_cloudwatch_event_target" "weekly_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.weekly_trigger.name
+  target_id = "TriggerBillingReportLambdaWeekly"
+  arn       = aws_lambda_function.billing_report.arn
+}
+
+resource "aws_cloudwatch_event_target" "monthly_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.monthly_trigger.name
+  target_id = "TriggerBillingReportLambdaMonthly"
+  arn       = aws_lambda_function.billing_report.arn
+}
+
+resource "aws_cloudwatch_event_target" "yearly_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.yearly_trigger.name
+  target_id = "TriggerBillingReportLambdaYearly"
   arn       = aws_lambda_function.billing_report.arn
 }
 
 # Grant CloudWatch permission to invoke Lambda
-resource "aws_lambda_permission" "allow_cloudwatch" {
-  statement_id  = "AllowExecutionFromCloudWatch"
+resource "aws_lambda_permission" "allow_cloudwatch_daily" {
+  statement_id  = "AllowExecutionFromCloudWatchDaily"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.billing_report.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.daily_trigger.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_weekly" {
+  statement_id  = "AllowExecutionFromCloudWatchWeekly"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.billing_report.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.weekly_trigger.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_monthly" {
+  statement_id  = "AllowExecutionFromCloudWatchMonthly"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.billing_report.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.monthly_trigger.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_yearly" {
+  statement_id  = "AllowExecutionFromCloudWatchYearly"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.billing_report.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.yearly_trigger.arn
 }
 
 # Create CloudWatch Log Group for Lambda function
@@ -155,119 +226,6 @@ resource "aws_sns_topic_subscription" "email_subscription" {
   topic_arn = aws_sns_topic.billing_report.arn
   protocol  = "email"
   endpoint  = var.email_subscription
-}
-
-# Create IAM role for EventBridge scheduler
-resource "aws_iam_role" "scheduler_role" {
-  name = "billing-report-eventbridge-scheduler-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "scheduler.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-        Condition = {
-          StringEquals = {
-            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
-          }
-        }
-      }
-    ]
-  })
-}
-
-# Attach policy to EventBridge scheduler IAM role
-resource "aws_iam_role_policy" "scheduler_policy" {
-  name = "billing-report-eventbridge-scheduler-policy"
-  role = aws_iam_role.scheduler_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "lambda:InvokeFunction"
-        ]
-        Resource = [
-          "${aws_lambda_function.billing_report.arn}:*",
-          aws_lambda_function.billing_report.arn
-        ]
-      }
-    ]
-  })
-}
-
-# Create EventBridge scheduler for daily billing report
-resource "aws_scheduler_schedule" "daily_billing_report" {
-  name       = "billing-report-daily-schedule"
-  group_name = "default"
-
-  flexible_time_window {
-    mode = "OFF"
-  }
-
-  schedule_expression = "cron(0 5 * * ? *)" # 7 AM CEST is 5 AM UTC
-
-  target {
-    arn      = aws_lambda_function.billing_report.arn
-    role_arn = aws_iam_role.scheduler_role.arn
-  }
-}
-
-# Create EventBridge scheduler for weekly billing report (Mondays at 7 AM CEST)
-resource "aws_scheduler_schedule" "weekly_billing_report" {
-  name       = "billing-report-weekly-schedule"
-  group_name = "default"
-
-  flexible_time_window {
-    mode = "OFF"
-  }
-
-  schedule_expression = "cron(0 5 ? * MON *)" # 7 AM CEST on Mondays
-
-  target {
-    arn      = aws_lambda_function.billing_report.arn
-    role_arn = aws_iam_role.scheduler_role.arn
-  }
-}
-
-# Create EventBridge scheduler for monthly billing report (1st day of each month at 7 AM CEST)
-resource "aws_scheduler_schedule" "monthly_billing_report" {
-  name       = "billing-report-monthly-schedule"
-  group_name = "default"
-
-  flexible_time_window {
-    mode = "OFF"
-  }
-
-  schedule_expression = "cron(0 5 1 * ? *)" # 7 AM CEST on the 1st day of each month
-
-  target {
-    arn      = aws_lambda_function.billing_report.arn
-    role_arn = aws_iam_role.scheduler_role.arn
-  }
-}
-
-# Create EventBridge scheduler for yearly billing report (January 1st at 7 AM CEST)
-resource "aws_scheduler_schedule" "yearly_billing_report" {
-  name       = "billing-report-yearly-schedule"
-  group_name = "default"
-
-  flexible_time_window {
-    mode = "OFF"
-  }
-
-  schedule_expression = "cron(0 5 1 1 ? *)" # 7 AM CEST on January 1st
-
-  target {
-    arn      = aws_lambda_function.billing_report.arn
-    role_arn = aws_iam_role.scheduler_role.arn
-  }
 }
 
 resource "aws_dynamodb_table" "cost_explorer_processed_dates" {

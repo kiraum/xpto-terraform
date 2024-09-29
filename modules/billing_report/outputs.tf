@@ -28,17 +28,6 @@ output "cloudwatch_event_rule_name" {
   value       = aws_cloudwatch_event_rule.daily_trigger.name
 }
 
-# Output the ARN of the EventBridge scheduler role
-output "scheduler_role_arn" {
-  description = "The ARN of the IAM role used by the EventBridge scheduler"
-  value       = aws_iam_role.scheduler_role.arn
-}
-
-# Output the name of the EventBridge scheduler
-output "scheduler_name" {
-  description = "The name of the EventBridge scheduler for the daily billing report"
-  value       = aws_scheduler_schedule.daily_billing_report.name
-}
 
 # Output the email address subscribed to the SNS topic
 output "sns_subscription_email" {
