@@ -219,23 +219,54 @@ resource "aws_scheduler_schedule" "daily_billing_report" {
   }
 }
 
-resource "aws_kms_key" "lambda_key" {
-  description                        = "Default key that protects my Lambda functions when no other key is defined"
-  enable_key_rotation                = true
-  bypass_policy_lockout_safety_check = false
+# Create EventBridge scheduler for weekly billing report (Mondays at 7 AM CEST)
+resource "aws_scheduler_schedule" "weekly_billing_report" {
+  name       = "billing-report-weekly-schedule"
+  group_name = "default"
 
-  lifecycle {
-    ignore_changes = [tags, tags_all]
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(0 5 ? * MON *)" # 7 AM CEST on Mondays
+
+  target {
+    arn      = aws_lambda_function.billing_report.arn
+    role_arn = aws_iam_role.scheduler_role.arn
   }
 }
 
-resource "aws_kms_key" "sns_key" {
-  description                        = "Default key that protects my SNS data when no other key is defined"
-  enable_key_rotation                = true
-  bypass_policy_lockout_safety_check = false
+# Create EventBridge scheduler for monthly billing report (1st day of each month at 7 AM CEST)
+resource "aws_scheduler_schedule" "monthly_billing_report" {
+  name       = "billing-report-monthly-schedule"
+  group_name = "default"
 
-  lifecycle {
-    ignore_changes = [tags, tags_all]
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(0 5 1 * ? *)" # 7 AM CEST on the 1st day of each month
+
+  target {
+    arn      = aws_lambda_function.billing_report.arn
+    role_arn = aws_iam_role.scheduler_role.arn
+  }
+}
+
+# Create EventBridge scheduler for yearly billing report (January 1st at 7 AM CEST)
+resource "aws_scheduler_schedule" "yearly_billing_report" {
+  name       = "billing-report-yearly-schedule"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(0 5 1 1 ? *)" # 7 AM CEST on January 1st
+
+  target {
+    arn      = aws_lambda_function.billing_report.arn
+    role_arn = aws_iam_role.scheduler_role.arn
   }
 }
 
