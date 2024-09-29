@@ -62,20 +62,60 @@ module "route53" {
           type = "A"
           alias = {
             name                   = "dpop20p5u4112.cloudfront.net"
-            zone_id                = "Z2FDTNDATAQYW2" # This is the hosted zone ID for CloudFront
+            zone_id                = "Z2FDTNDATAQYW2"
             evaluate_target_health = false
           }
         },
         {
           name    = "www"
           type    = "CNAME"
-          ttl     = 301
+          ttl     = 300
           records = ["dpop20p5u4112.cloudfront.net"]
+        },
+        {
+          name    = ""
+          type    = "MX"
+          ttl     = 300
+          records = ["10 mail.protonmail.ch", "20 mailsec.protonmail.ch"]
+        },
+        {
+          name = ""
+          type = "TXT"
+          ttl  = 300
+          records = [
+            "protonmail-verification=4fd8734e27858d5bb727e0b811f506185942856d",
+            "v=spf1 include:_spf.protonmail.ch ~all"
+          ]
+        },
+        {
+          name    = "_dmarc"
+          type    = "TXT"
+          ttl     = 300
+          records = ["v=DMARC1; p=quarantine"]
+        },
+        {
+          name    = "protonmail._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        },
+        {
+          name    = "protonmail2._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail2.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        },
+        {
+          name    = "protonmail3._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
         }
       ]
     }
   }
 }
+
 
 module "static_website" {
   source = "../../modules/static_website"
