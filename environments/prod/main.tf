@@ -46,7 +46,6 @@ module "billing_report" {
   sns_topic_name       = "billing-report-topic"
   email_subscription   = "tfgoncalves@xpto.it"
   dynamodb_table_name  = "CostExplorerProcessedDates"
-  ruler_name           = "billing-report-daily-schedule"
 }
 
 module "route53" {
