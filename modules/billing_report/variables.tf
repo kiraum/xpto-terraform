@@ -7,7 +7,7 @@ variable "lambda_function_name" {
 variable "sns_topic_name" {
   description = "Name of the SNS topic"
   type        = string
-  default     = "root-account-topic"
+  default     = "billing-report-topic"
 }
 
 variable "email_subscription" {

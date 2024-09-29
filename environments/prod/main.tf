@@ -43,7 +43,7 @@ module "billing_report" {
   source = "../../modules/billing_report"
 
   lambda_function_name = "billing-report-lambda"
-  sns_topic_name       = "root-account-topic"
+  sns_topic_name       = "billing-report-topic"
   email_subscription   = "tfgoncalves@xpto.it"
   dynamodb_table_name  = "CostExplorerProcessedDates"
   ruler_name           = "billing-report-daily-schedule"
