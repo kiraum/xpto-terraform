@@ -17,7 +17,7 @@ DYNAMODB_TABLE = os.environ.get("DYNAMODB_TABLE", "CostExplorerProcessedDates")
 
 def get_last_processed_date(time_period):
     """
-    Get the last processed date for the given time period from DynamoDB.
+    Retrieve the last processed date for a given time period from DynamoDB.
 
     Args:
         time_period (str): The time period to check (daily, weekly, monthly, yearly).
@@ -38,7 +38,7 @@ def get_last_processed_date(time_period):
 
 def update_last_processed_date(time_period, date):
     """
-    Update the last processed date for the given time period in DynamoDB.
+    Update the last processed date for a given time period in DynamoDB.
 
     Args:
         time_period (str): The time period to update (daily, weekly, monthly, yearly).
@@ -139,7 +139,7 @@ def process_cost_data(response, compare_response):
     return current_costs, compare_costs, unit
 
 
-def generate_cost_report(
+def generate_html_report(
     time_period,
     start,
     end,
@@ -148,9 +148,10 @@ def generate_cost_report(
     unit,
     response,
     compare_response,
+    cost_threshold,
 ):
     """
-    Generate a detailed cost report.
+    Generate a detailed HTML cost report.
 
     Args:
         time_period (str): The time period of the report.
@@ -161,23 +162,70 @@ def generate_cost_report(
         unit (str): The currency unit.
         response (dict): The response from AWS Cost Explorer for the current period.
         compare_response (dict): The response from AWS Cost Explorer for the comparison period.
+        cost_threshold (float): The cost threshold for the time period.
 
     Returns:
-        str: A formatted cost report message.
+        str: A formatted HTML cost report.
     """
-    message = f"Total AWS cost for {time_period} ({start.isoformat()} to {end.isoformat()}): {current_costs:.7f} {unit}\n"
-    message += f"Previous {time_period} cost: {compare_costs:.7f} {unit}\n"
-    message += f"Difference: {current_costs - compare_costs:.7f} {unit}\n"
+    html_template = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AWS Cost Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { width: 80%; margin: 0 auto; }
+            h1 { color: #0066cc; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .highlight { background-color: #ffffcc; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>AWS Cost Report for {time_period}</h1>
+            <p>Period: {start_date} to {end_date}</p>
+            <h2>Summary</h2>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Current {time_period} cost</td>
+                    <td>{current_costs:.7f} {unit}</td>
+                </tr>
+                <tr>
+                    <td>Previous {time_period} cost</td>
+                    <td>{compare_costs:.7f} {unit}</td>
+                </tr>
+                <tr class="highlight">
+                    <td>Difference</td>
+                    <td>{difference:.7f} {unit}</td>
+                </tr>
+                <tr>
+                    <td>Threshold</td>
+                    <td>{threshold:.7f} {unit}</td>
+                </tr>
+            </table>
 
-    cost_threshold = {
-        "daily": DAILY_COST_THRESHOLD,
-        "weekly": WEEKLY_COST_THRESHOLD,
-        "monthly": MONTHLY_COST_THRESHOLD,
-        "yearly": YEARLY_COST_THRESHOLD,
-    }.get(time_period, DAILY_COST_THRESHOLD)
-
-    message += f"Threshold: {cost_threshold:.7f} {unit}\n\n"
-    message += "Breakdown by service:\n"
+            <h2>Breakdown by Service</h2>
+            <table>
+                <tr>
+                    <th>Service</th>
+                    <th>Current Cost</th>
+                    <th>Previous Cost</th>
+                    <th>Difference</th>
+                </tr>
+                {service_rows}
+            </table>
+        </div>
+    </body>
+    </html>
+    """
 
     current_services = {
         group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
@@ -190,32 +238,50 @@ def generate_cost_report(
         for group in result.get("Groups", [])
     }
 
+    service_rows = ""
     for service, cost in current_services.items():
         if cost > 0:
             previous_cost = previous_services.get(service, 0)
-            message += (
-                f"{service}: {cost:.7f} {unit} (Previous: {previous_cost:.7f} {unit})\n"
-            )
+            difference = cost - previous_cost
+            service_rows += f"""
+                <tr>
+                    <td>{service}</td>
+                    <td>{cost:.7f} {unit}</td>
+                    <td>{previous_cost:.7f} {unit}</td>
+                    <td>{difference:.7f} {unit}</td>
+                </tr>
+            """
 
-    return message
+    return html_template.format(
+        time_period=time_period,
+        start_date=start.isoformat(),
+        end_date=(end - datetime.timedelta(days=1)).isoformat(),
+        current_costs=current_costs,
+        compare_costs=compare_costs,
+        unit=unit,
+        difference=current_costs - compare_costs,
+        threshold=cost_threshold,
+        service_rows=service_rows,
+    )
 
 
-def send_sns(message):
+def send_sns(message, subject):
     """
-    Send message to SNS topic.
+    Send an HTML message to an SNS topic.
 
     Args:
-        message (str): Message to be sent
-
-    Raises:
-        ClientError: If an error occurs while publishing to SNS.
+        message (str): The HTML message to be sent.
+        subject (str): The subject of the message.
     """
     sns = boto3.client("sns")
     sns_topic_arn = os.environ["SNS_TOPIC_ARN"]
 
     try:
         response = sns.publish(
-            TopicArn=sns_topic_arn, Message=message, Subject="AWS Cost Report"
+            TopicArn=sns_topic_arn,
+            Message=message,
+            Subject=subject,
+            MessageStructure="html",
         )
         print(f"Message published to SNS. Message ID: {response['MessageId']}")
     except ClientError as e:
@@ -227,7 +293,7 @@ def lambda_handler(event, context):
     AWS Lambda function to report AWS costs for various time periods.
 
     This function retrieves cost data from AWS Cost Explorer for a specified time period,
-    compares it with the previous period, and generates a cost report. If the cost exceeds
+    compares it with the previous period, and generates an HTML cost report. If the cost exceeds
     a predefined threshold, it sends a notification via SNS.
 
     Args:
@@ -240,21 +306,6 @@ def lambda_handler(event, context):
         dict: A dictionary containing the status code and response body.
             - statusCode (int): HTTP status code (200 for success, 500 for errors).
             - body (str): A message describing the result or error.
-
-    Raises:
-        ClientError: If there's an issue with the AWS Cost Explorer API.
-        ValueError: If an invalid time period is provided.
-        Exception: For any other unexpected errors.
-
-    Note:
-        - The function uses environment variables for configuration:
-          - DAILY_COST_THRESHOLD, WEEKLY_COST_THRESHOLD, MONTHLY_COST_THRESHOLD, YEARLY_COST_THRESHOLD:
-            The cost thresholds for sending notifications for each time period.
-          - SNS_TOPIC_ARN: The ARN of the SNS topic for notifications.
-          - DYNAMODB_TABLE: The name of the DynamoDB table for tracking processed dates.
-        - Cost data is retrieved using the AWS Cost Explorer API.
-        - For daily reports, the function adjusts the date range to ensure full day coverage.
-        - The function uses DynamoDB to prevent duplicate processing of the same time period.
     """
     ce = boto3.client("ce")
     time_period = event.get("time_period", "daily").lower()
@@ -265,7 +316,6 @@ def lambda_handler(event, context):
             time_period, current_date
         )
 
-        # Check if this period has already been processed
         last_processed_date = get_last_processed_date(time_period)
         if last_processed_date and last_processed_date >= end.isoformat():
             return {
@@ -273,7 +323,6 @@ def lambda_handler(event, context):
                 "body": f"Cost data for {time_period} ending on {end.isoformat()} has already been processed.",
             }
 
-        # For daily reports, we need to add one day to the end date to include the full day
         if time_period == "daily":
             end = end + datetime.timedelta(days=1)
             compare_end = compare_end + datetime.timedelta(days=1)
@@ -302,7 +351,6 @@ def lambda_handler(event, context):
             message = f"No cost data available for the specified {time_period} period."
             return {"statusCode": 200, "body": message}
 
-        # Select the appropriate cost threshold based on the time period
         cost_threshold = {
             "daily": DAILY_COST_THRESHOLD,
             "weekly": WEEKLY_COST_THRESHOLD,
@@ -310,27 +358,29 @@ def lambda_handler(event, context):
             "yearly": YEARLY_COST_THRESHOLD,
         }.get(time_period, DAILY_COST_THRESHOLD)
 
-        if current_costs > cost_threshold:
-            message = generate_cost_report(
-                time_period,
-                start,
-                end - datetime.timedelta(days=1),  # Adjust end date for report
-                current_costs,
-                compare_costs,
-                unit,
-                response,
-                compare_response,
-            )
-            print(message)
-            send_sns(message)
-        else:
-            message = f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
-            print(message)
+        html_report = generate_html_report(
+            time_period,
+            start,
+            end,
+            current_costs,
+            compare_costs,
+            unit,
+            response,
+            compare_response,
+            cost_threshold,
+        )
 
-        # Update the last processed date
+        if current_costs > cost_threshold:
+            print("Cost threshold exceeded. Sending notification.")
+            send_sns(html_report, f"AWS Cost Report - {time_period.capitalize()}")
+        else:
+            print(
+                f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
+            )
+
         update_last_processed_date(time_period, end - datetime.timedelta(days=1))
 
-        return {"statusCode": 200, "body": message}
+        return {"statusCode": 200, "body": "Cost report generated successfully."}
 
     except ClientError as exc:
         message = f"An error occurred with the Cost Explorer API: {str(exc)}"
