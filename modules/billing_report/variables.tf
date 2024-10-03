@@ -15,12 +15,6 @@ variable "email_subscription" {
   type        = string
 }
 
-variable "ruler_name" {
-  description = "EventBridge ruler name"
-  type        = string
-  default     = "daily-billing-report-ruler"
-}
-
 variable "dynamodb_table_name" {
   description = "Name of the DynamoDB table for storing processed dates"
   type        = string

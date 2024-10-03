@@ -104,69 +104,90 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
-# Create CloudWatch event rule for daily trigger
+# Create CloudWatch event rules
 resource "aws_cloudwatch_event_rule" "daily_trigger" {
   name                = "billing-report-daily-schedule"
   description         = "Triggers the billing report Lambda function daily at 7 AM CEST"
-  schedule_expression = "cron(0 5 * * ? *)" # 7 AM CEST is 5 AM UTC
+  schedule_expression = "cron(0 5 * * ? *)"
   tags = {
     Name = "billing-report-daily-schedule"
   }
 }
 
-# Create CloudWatch event rule for weekly trigger
 resource "aws_cloudwatch_event_rule" "weekly_trigger" {
   name                = "billing-report-weekly-schedule"
   description         = "Triggers the billing report Lambda function weekly on Mondays at 7 AM CEST"
-  schedule_expression = "cron(0 5 ? * MON *)" # 7 AM CEST on Mondays
+  schedule_expression = "cron(0 5 ? * MON *)"
   tags = {
     Name = "billing-report-weekly-schedule"
   }
 }
 
-# Create CloudWatch event rule for monthly trigger
 resource "aws_cloudwatch_event_rule" "monthly_trigger" {
   name                = "billing-report-monthly-schedule"
   description         = "Triggers the billing report Lambda function monthly on the 1st day at 7 AM CEST"
-  schedule_expression = "cron(0 5 1 * ? *)" # 7 AM CEST on the 1st day of each month
+  schedule_expression = "cron(0 5 1 * ? *)"
   tags = {
     Name = "billing-report-monthly-schedule"
   }
 }
 
-# Create CloudWatch event rule for yearly trigger
 resource "aws_cloudwatch_event_rule" "yearly_trigger" {
   name                = "billing-report-yearly-schedule"
   description         = "Triggers the billing report Lambda function yearly on January 1st at 7 AM CEST"
-  schedule_expression = "cron(0 5 1 1 ? *)" # 7 AM CEST on January 1st
+  schedule_expression = "cron(0 5 1 1 ? *)"
   tags = {
     Name = "billing-report-yearly-schedule"
   }
 }
 
-# Set Lambda function as target for CloudWatch events
+# Set Lambda function as target for CloudWatch events with input transformers
 resource "aws_cloudwatch_event_target" "daily_lambda_target" {
   rule      = aws_cloudwatch_event_rule.daily_trigger.name
   target_id = "TriggerBillingReportLambdaDaily"
   arn       = aws_lambda_function.billing_report.arn
+  input_transformer {
+    input_paths = {}
+    input_template = jsonencode({
+      time_period = "daily"
+    })
+  }
 }
 
 resource "aws_cloudwatch_event_target" "weekly_lambda_target" {
   rule      = aws_cloudwatch_event_rule.weekly_trigger.name
   target_id = "TriggerBillingReportLambdaWeekly"
   arn       = aws_lambda_function.billing_report.arn
+  input_transformer {
+    input_paths = {}
+    input_template = jsonencode({
+      time_period = "weekly"
+    })
+  }
 }
 
 resource "aws_cloudwatch_event_target" "monthly_lambda_target" {
   rule      = aws_cloudwatch_event_rule.monthly_trigger.name
   target_id = "TriggerBillingReportLambdaMonthly"
   arn       = aws_lambda_function.billing_report.arn
+  input_transformer {
+    input_paths = {}
+    input_template = jsonencode({
+      time_period = "monthly"
+    })
+  }
 }
 
 resource "aws_cloudwatch_event_target" "yearly_lambda_target" {
   rule      = aws_cloudwatch_event_rule.yearly_trigger.name
   target_id = "TriggerBillingReportLambdaYearly"
   arn       = aws_lambda_function.billing_report.arn
+  input_transformer {
+    input_paths = {}
+    input_template = jsonencode({
+      time_period = "yearly"
+    })
+  }
 }
 
 # Grant CloudWatch permission to invoke Lambda
