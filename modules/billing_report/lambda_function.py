@@ -125,6 +125,7 @@ def generate_html_report(
     Returns:
         str: A formatted HTML cost report.
     """
+
     html_template = """
     <!DOCTYPE html>
     <html lang="en">
@@ -132,51 +133,41 @@ def generate_html_report(
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AWS Cost Report</title>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { width: 80%; margin: 0 auto; }
-            h1 { color: #0066cc; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .highlight { background-color: #ffffcc; }
-        </style>
     </head>
-    <body>
-        <div class="container">
-            <h1>AWS Cost Report for {time_period}</h1>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="width: 80%; margin: 0 auto;">
+            <h1 style="color: #0066cc;">AWS Cost Report for {time_period}</h1>
             <p>Period: {start_date} to {end_date}</p>
             <h2>Summary</h2>
-            <table>
+            <table style="border-collapse: collapse; width: 100%;">
                 <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Metric</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Value</th>
                 </tr>
                 <tr>
-                    <td>Current {time_period} cost</td>
-                    <td>{current_costs:.7f} {unit}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">Current {time_period} cost</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{current_costs:.7f} {unit}</td>
                 </tr>
                 <tr>
-                    <td>Previous {time_period} cost</td>
-                    <td>{compare_costs:.7f} {unit}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">Previous {time_period} cost</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{compare_costs:.7f} {unit}</td>
                 </tr>
-                <tr class="highlight">
-                    <td>Difference</td>
-                    <td>{difference:.7f} {unit}</td>
+                <tr style="background-color: #ffffcc;">
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">Difference</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{difference:.7f} {unit}</td>
                 </tr>
                 <tr>
-                    <td>Threshold</td>
-                    <td>{threshold:.7f} {unit}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">Threshold</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{threshold:.7f} {unit}</td>
                 </tr>
             </table>
-
             <h2>Breakdown by Service</h2>
-            <table>
+            <table style="border-collapse: collapse; width: 100%;">
                 <tr>
-                    <th>Service</th>
-                    <th>Current Cost</th>
-                    <th>Previous Cost</th>
-                    <th>Difference</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Service</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Current Cost</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Previous Cost</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Difference</th>
                 </tr>
                 {service_rows}
             </table>
