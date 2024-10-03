@@ -12,48 +12,6 @@ WEEKLY_COST_THRESHOLD = float(os.environ.get("WEEKLY_COST_THRESHOLD", "0.01"))
 MONTHLY_COST_THRESHOLD = float(os.environ.get("MONTHLY_COST_THRESHOLD", "0.01"))
 YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "0.01"))
 
-DYNAMODB_TABLE = os.environ.get("DYNAMODB_TABLE", "CostExplorerProcessedDates")
-
-
-def get_last_processed_date(time_period):
-    """
-    Retrieve the last processed date for a given time period from DynamoDB.
-
-    Args:
-        time_period (str): The time period to check (daily, weekly, monthly, yearly).
-
-    Returns:
-        str: The last processed date as an ISO format string, or None if not found.
-    """
-    dynamodb = boto3.resource("dynamodb")
-    table = dynamodb.Table(DYNAMODB_TABLE)
-
-    try:
-        response = table.get_item(Key={"time_period": time_period})
-        return response.get("Item", {}).get("last_processed_date")
-    except ClientError as e:
-        print(f"Error retrieving last processed date: {e}")
-        return None
-
-
-def update_last_processed_date(time_period, date):
-    """
-    Update the last processed date for a given time period in DynamoDB.
-
-    Args:
-        time_period (str): The time period to update (daily, weekly, monthly, yearly).
-        date (datetime.date): The date to set as the last processed date.
-    """
-    dynamodb = boto3.resource("dynamodb")
-    table = dynamodb.Table(DYNAMODB_TABLE)
-
-    try:
-        table.put_item(
-            Item={"time_period": time_period, "last_processed_date": date.isoformat()}
-        )
-    except ClientError as e:
-        print(f"Error updating last processed date: {e}")
-
 
 def calculate_time_periods(time_period, current_date):
     """
@@ -316,13 +274,6 @@ def lambda_handler(event, context):
             time_period, current_date
         )
 
-        last_processed_date = get_last_processed_date(time_period)
-        if last_processed_date and last_processed_date >= end.isoformat():
-            return {
-                "statusCode": 200,
-                "body": f"Cost data for {time_period} ending on {end.isoformat()} has already been processed.",
-            }
-
         if time_period == "daily":
             end = end + datetime.timedelta(days=1)
             compare_end = compare_end + datetime.timedelta(days=1)
@@ -377,8 +328,6 @@ def lambda_handler(event, context):
             print(
                 f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
             )
-
-        update_last_processed_date(time_period, end - datetime.timedelta(days=1))
 
         return {"statusCode": 200, "body": "Cost report generated successfully."}
 

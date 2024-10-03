@@ -14,9 +14,3 @@ variable "email_subscription" {
   description = "Email address for SNS subscription"
   type        = string
 }
-
-variable "dynamodb_table_name" {
-  description = "Name of the DynamoDB table for storing processed dates"
-  type        = string
-  default     = "CostExplorerProcessedDates"
-}

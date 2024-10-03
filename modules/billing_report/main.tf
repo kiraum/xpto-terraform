@@ -91,14 +91,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "sns:Publish"
         ]
         Resource = aws_sns_topic.billing_report.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:PutItem"
-        ]
-        Resource = "arn:aws:dynamodb:*:*:table/${var.dynamodb_table_name}"
       }
     ]
   })
@@ -247,19 +239,4 @@ resource "aws_sns_topic_subscription" "email_subscription" {
   topic_arn = aws_sns_topic.billing_report.arn
   protocol  = "email"
   endpoint  = var.email_subscription
-}
-
-resource "aws_dynamodb_table" "cost_explorer_processed_dates" {
-  name         = var.dynamodb_table_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "time_period"
-
-  attribute {
-    name = "time_period"
-    type = "S"
-  }
-
-  tags = {
-    Name = var.dynamodb_table_name
-  }
 }
