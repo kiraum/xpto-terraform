@@ -12,6 +12,8 @@ WEEKLY_COST_THRESHOLD = float(os.environ.get("WEEKLY_COST_THRESHOLD", "0.01"))
 MONTHLY_COST_THRESHOLD = float(os.environ.get("MONTHLY_COST_THRESHOLD", "0.01"))
 YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "0.01"))
 
+NOTIFICATION_SERVICE = os.environ.get("NOTIFICATION_SERVICE", "SNS").upper()
+
 
 def calculate_time_periods(time_period, current_date):
     """
@@ -83,6 +85,80 @@ def process_cost_data(response, compare_response):
         "USD",
     )
     return current_costs, compare_costs, unit
+
+
+def generate_text_report(
+    time_period,
+    start,
+    end,
+    current_costs,
+    compare_costs,
+    unit,
+    response,
+    compare_response,
+    cost_threshold,
+):
+    """
+    Generate a detailed text cost report.
+    Args:
+        time_period (str): The time period of the report.
+        start (datetime.date): The start date of the report.
+        end (datetime.date): The end date of the report.
+        current_costs (float): The total costs for the current period.
+        compare_costs (float): The total costs for the comparison period.
+        unit (str): The currency unit.
+        response (dict): The response from AWS Cost Explorer for the current period.
+        compare_response (dict): The response from AWS Cost Explorer for the comparison period.
+        cost_threshold (float): The cost threshold for the time period.
+    Returns:
+        str: A formatted text cost report.
+    """
+    text_template = """
+AWS Cost Report for {time_period}
+
+Period: {start_date} to {end_date}
+
+Summary:
+Current {time_period} cost: {current_costs:.7f} {unit}
+Previous {time_period} cost: {compare_costs:.7f} {unit}
+Difference: {difference:.7f} {unit}
+Threshold: {threshold:.7f} {unit}
+
+Breakdown by Service:
+{service_breakdown}
+    """
+
+    current_services = {
+        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    }
+    previous_services = {
+        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in compare_response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    }
+    service_breakdown = ""
+    for service, cost in current_services.items():
+        if cost > 0:
+            previous_cost = previous_services.get(service, 0)
+            difference = cost - previous_cost
+            service_breakdown += f"{service}:\n"
+            service_breakdown += f"  Current: {cost:.7f} {unit}\n"
+            service_breakdown += f"  Previous: {previous_cost:.7f} {unit}\n"
+            service_breakdown += f"  Difference: {difference:.7f} {unit}\n\n"
+
+    return text_template.format(
+        time_period=time_period,
+        start_date=start.isoformat(),
+        end_date=(end - datetime.timedelta(days=1)).isoformat(),
+        current_costs=current_costs,
+        compare_costs=compare_costs,
+        unit=unit,
+        difference=current_costs - compare_costs,
+        threshold=cost_threshold,
+        service_breakdown=service_breakdown,
+    )
 
 
 def generate_html_report(
@@ -160,6 +236,7 @@ def generate_html_report(
     </body>
     </html>
     """
+
     current_services = {
         group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
         for result in response["ResultsByTime"]
@@ -177,12 +254,13 @@ def generate_html_report(
             difference = cost - previous_cost
             service_rows += f"""
                 <tr>
-                    <td>{service}</td>
-                    <td>{cost:.7f} {unit}</td>
-                    <td>{previous_cost:.7f} {unit}</td>
-                    <td>{difference:.7f} {unit}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{service}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{cost:.7f} {unit}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{previous_cost:.7f} {unit}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">{difference:.7f} {unit}</td>
                 </tr>
             """
+
     return html_template.format(
         time_period=time_period,
         start_date=start.isoformat(),
@@ -194,6 +272,26 @@ def generate_html_report(
         threshold=cost_threshold,
         service_rows=service_rows,
     )
+
+
+def send_sns(message, subject):
+    """
+    Send a message using AWS SNS.
+    Args:
+        message (str): The message to be sent.
+        subject (str): The subject of the message.
+    """
+    sns = boto3.client("sns")
+    topic_arn = os.environ["SNS_TOPIC_ARN"]
+
+    if not topic_arn:
+        raise ValueError("SNS_TOPIC_ARN must be set in the environment variables")
+
+    try:
+        response = sns.publish(TopicArn=topic_arn, Message=message, Subject=subject)
+        print(f"Message sent to SNS! Message ID: {response['MessageId']}")
+    except ClientError as e:
+        print(f"An error occurred while sending message via SNS: {e}")
 
 
 def send_ses(message, subject):
@@ -234,12 +332,25 @@ def send_ses(message, subject):
         print(f"An error occurred while sending email via SES: {e}")
 
 
+def send_notification(message, subject):
+    """
+    Send a notification using either SES or SNS.
+    Args:
+        message (str): The message to be sent.
+        subject (str): The subject of the message.
+    """
+    if NOTIFICATION_SERVICE == "SES":
+        send_ses(message, subject)
+    else:  # Default to SNS
+        send_sns(message, subject)
+
+
 def lambda_handler(event, context):
     """
     AWS Lambda function to report AWS costs for various time periods.
     This function retrieves cost data from AWS Cost Explorer for a specified time period,
-    compares it with the previous period, and generates an HTML cost report. If the cost exceeds
-    a predefined threshold, it sends a notification via SES.
+    compares it with the previous period, and generates a cost report. If the cost exceeds
+    a predefined threshold, it sends a notification via SNS or SES.
     Args:
         event (dict): The Lambda event object containing input parameters.
             - time_period (str, optional): The time period for the cost report.
@@ -287,20 +398,33 @@ def lambda_handler(event, context):
             "monthly": MONTHLY_COST_THRESHOLD,
             "yearly": YEARLY_COST_THRESHOLD,
         }.get(time_period, DAILY_COST_THRESHOLD)
-        html_report = generate_html_report(
-            time_period,
-            start,
-            end,
-            current_costs,
-            compare_costs,
-            unit,
-            response,
-            compare_response,
-            cost_threshold,
-        )
+        if NOTIFICATION_SERVICE == "SES":
+            report = generate_html_report(
+                time_period,
+                start,
+                end,
+                current_costs,
+                compare_costs,
+                unit,
+                response,
+                compare_response,
+                cost_threshold,
+            )
+        else:
+            report = generate_text_report(
+                time_period,
+                start,
+                end,
+                current_costs,
+                compare_costs,
+                unit,
+                response,
+                compare_response,
+                cost_threshold,
+            )
         if current_costs > cost_threshold:
             print("Cost threshold exceeded. Sending notification.")
-            send_ses(html_report, f"AWS Cost Report - {time_period.capitalize()}")
+            send_notification(report, f"AWS Cost Report - {time_period.capitalize()}")
         else:
             print(
                 f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."

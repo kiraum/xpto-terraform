@@ -33,7 +33,7 @@ output "ses_sender_email" {
   value       = var.ses_sender_email
 }
 
-output "ses_recipient_email" {
-  description = "The email address receiving SES emails"
-  value       = var.ses_recipient_email
+output "recipient_email" {
+  description = "The email address receiving emails"
+  value       = var.recipient_email
 }

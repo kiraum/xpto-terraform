@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 1.0.0"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -27,8 +28,14 @@ resource "aws_lambda_function" "billing_report" {
 
   environment {
     variables = {
-      SES_SENDER_EMAIL    = var.ses_sender_email
-      SES_RECIPIENT_EMAIL = var.ses_recipient_email
+      SES_SENDER_EMAIL       = var.ses_sender_email
+      recipient_email        = var.recipient_email
+      SNS_TOPIC_ARN          = aws_sns_topic.billing_report.arn
+      NOTIFICATION_SERVICE   = var.notification_service
+      DAILY_COST_THRESHOLD   = var.daily_cost_threshold
+      WEEKLY_COST_THRESHOLD  = var.weekly_cost_threshold
+      MONTHLY_COST_THRESHOLD = var.monthly_cost_threshold
+      YEARLY_COST_THRESHOLD  = var.yearly_cost_threshold
     }
   }
 
@@ -93,9 +100,21 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "ses:SendRawEmail"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.billing_report.arn
       }
     ]
   })
+}
+
+# Create SNS topic for billing report
+resource "aws_sns_topic" "billing_report" {
+  name = "billing-report-topic"
 }
 
 # Create CloudWatch event rules
@@ -242,4 +261,10 @@ resource "aws_ses_domain_dkim" "ses_domain_dkim" {
 resource "aws_ses_domain_mail_from" "ses_domain_mail_from" {
   domain           = aws_ses_domain_identity.ses_domain.domain
   mail_from_domain = "mail.${aws_ses_domain_identity.ses_domain.domain}"
+}
+
+resource "aws_sns_topic_subscription" "billing_report_email" {
+  topic_arn = aws_sns_topic.billing_report.arn
+  protocol  = "email"
+  endpoint  = var.recipient_email
 }
