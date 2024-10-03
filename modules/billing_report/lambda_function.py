@@ -16,14 +16,11 @@ YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "0.01"))
 def calculate_time_periods(time_period, current_date):
     """
     Calculate start and end dates for the given time period.
-
     Args:
         time_period (str): The time period to calculate (daily, weekly, monthly, yearly).
         current_date (datetime.date): The current date.
-
     Returns:
         tuple: start, end, compare_start, compare_end dates.
-
     Raises:
         ValueError: If an invalid time period is provided.
     """
@@ -33,14 +30,11 @@ def calculate_time_periods(time_period, current_date):
         "monthly": ("month", 1),
         "yearly": ("year", "year"),
     }
-
     if time_period not in periods:
         raise ValueError(
             f"Invalid time period: {time_period}. Must be daily, weekly, monthly, or yearly."
         )
-
     delta, compare_delta = periods[time_period]
-
     if time_period == "daily":
         start = current_date - datetime.timedelta(days=1)
         end = start
@@ -56,24 +50,20 @@ def calculate_time_periods(time_period, current_date):
         end = current_date
         compare_start = (start - datetime.timedelta(days=1)).replace(**{delta: 1})
         compare_end = start
-
     return start, end, compare_start, compare_end
 
 
 def process_cost_data(response, compare_response):
     """
     Process the cost data from AWS Cost Explorer responses.
-
     Args:
         response (dict): The response from AWS Cost Explorer for the current period.
         compare_response (dict): The response from AWS Cost Explorer for the comparison period.
-
     Returns:
         tuple: current_costs, compare_costs, unit. Returns (None, None, None) if no data is available.
     """
     if not response["ResultsByTime"] or not compare_response["ResultsByTime"]:
         return None, None, None
-
     current_costs = sum(
         float(group["Metrics"]["UnblendedCost"]["Amount"])
         for result in response["ResultsByTime"]
@@ -84,7 +74,6 @@ def process_cost_data(response, compare_response):
         for result in compare_response["ResultsByTime"]
         for group in result.get("Groups", [])
     )
-
     unit = next(
         (
             result["Groups"][0]["Metrics"]["UnblendedCost"]["Unit"]
@@ -93,7 +82,6 @@ def process_cost_data(response, compare_response):
         ),
         "USD",
     )
-
     return current_costs, compare_costs, unit
 
 
@@ -110,7 +98,6 @@ def generate_html_report(
 ):
     """
     Generate a detailed HTML cost report.
-
     Args:
         time_period (str): The time period of the report.
         start (datetime.date): The start date of the report.
@@ -121,11 +108,9 @@ def generate_html_report(
         response (dict): The response from AWS Cost Explorer for the current period.
         compare_response (dict): The response from AWS Cost Explorer for the comparison period.
         cost_threshold (float): The cost threshold for the time period.
-
     Returns:
         str: A formatted HTML cost report.
     """
-
     html_template = """
     <!DOCTYPE html>
     <html lang="en">
@@ -175,7 +160,6 @@ def generate_html_report(
     </body>
     </html>
     """
-
     current_services = {
         group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
         for result in response["ResultsByTime"]
@@ -186,7 +170,6 @@ def generate_html_report(
         for result in compare_response["ResultsByTime"]
         for group in result.get("Groups", [])
     }
-
     service_rows = ""
     for service, cost in current_services.items():
         if cost > 0:
@@ -200,7 +183,6 @@ def generate_html_report(
                     <td>{difference:.7f} {unit}</td>
                 </tr>
             """
-
     return html_template.format(
         time_period=time_period,
         start_date=start.isoformat(),
@@ -214,43 +196,55 @@ def generate_html_report(
     )
 
 
-def send_sns(message, subject):
+def send_ses(message, subject):
     """
-    Send an HTML message to an SNS topic.
-
+    Send an HTML message using AWS SES.
     Args:
         message (str): The HTML message to be sent.
-        subject (str): The subject of the message.
+        subject (str): The subject of the email.
     """
-    sns = boto3.client("sns")
-    sns_topic_arn = os.environ["SNS_TOPIC_ARN"]
+    ses = boto3.client("ses")
+    sender = os.environ["SES_SENDER_EMAIL"]
+    recipient = os.environ["SES_RECIPIENT_EMAIL"]
+
+    if not sender or not recipient:
+        raise ValueError(
+            "SES_SENDER_EMAIL and SES_RECIPIENT_EMAIL must be set in the environment variables"
+        )
 
     try:
-        response = sns.publish(
-            TopicArn=sns_topic_arn,
-            Message=message,
-            Subject=subject,
-            MessageStructure="html",
+        response = ses.send_email(
+            Source=sender,
+            Destination={
+                "ToAddresses": [recipient],
+            },
+            Message={
+                "Subject": {
+                    "Data": subject,
+                },
+                "Body": {
+                    "Html": {
+                        "Data": message,
+                    },
+                },
+            },
         )
-        print(f"Message published to SNS. Message ID: {response['MessageId']}")
+        print(f"Email sent! Message ID: {response['MessageId']}")
     except ClientError as e:
-        print(f"An error occurred while publishing to SNS: {e}")
+        print(f"An error occurred while sending email via SES: {e}")
 
 
 def lambda_handler(event, context):
     """
     AWS Lambda function to report AWS costs for various time periods.
-
     This function retrieves cost data from AWS Cost Explorer for a specified time period,
     compares it with the previous period, and generates an HTML cost report. If the cost exceeds
-    a predefined threshold, it sends a notification via SNS.
-
+    a predefined threshold, it sends a notification via SES.
     Args:
         event (dict): The Lambda event object containing input parameters.
             - time_period (str, optional): The time period for the cost report.
               Valid values are 'daily', 'weekly', 'monthly', 'yearly'. Defaults to 'daily'.
         context (object): The Lambda context object (not used in this function).
-
     Returns:
         dict: A dictionary containing the status code and response body.
             - statusCode (int): HTTP status code (200 for success, 500 for errors).
@@ -259,16 +253,13 @@ def lambda_handler(event, context):
     ce = boto3.client("ce")
     time_period = event.get("time_period", "daily").lower()
     current_date = datetime.datetime.utcnow().date()
-
     try:
         start, end, compare_start, compare_end = calculate_time_periods(
             time_period, current_date
         )
-
         if time_period == "daily":
             end = end + datetime.timedelta(days=1)
             compare_end = compare_end + datetime.timedelta(days=1)
-
         response = ce.get_cost_and_usage(
             TimePeriod={"Start": start.isoformat(), "End": end.isoformat()},
             Granularity="DAILY",
@@ -284,22 +275,18 @@ def lambda_handler(event, context):
             Metrics=["UnblendedCost"],
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
-
         current_costs, compare_costs, unit = process_cost_data(
             response, compare_response
         )
-
         if current_costs is None:
             message = f"No cost data available for the specified {time_period} period."
             return {"statusCode": 200, "body": message}
-
         cost_threshold = {
             "daily": DAILY_COST_THRESHOLD,
             "weekly": WEEKLY_COST_THRESHOLD,
             "monthly": MONTHLY_COST_THRESHOLD,
             "yearly": YEARLY_COST_THRESHOLD,
         }.get(time_period, DAILY_COST_THRESHOLD)
-
         html_report = generate_html_report(
             time_period,
             start,
@@ -311,17 +298,14 @@ def lambda_handler(event, context):
             compare_response,
             cost_threshold,
         )
-
         if current_costs > cost_threshold:
             print("Cost threshold exceeded. Sending notification.")
-            send_sns(html_report, f"AWS Cost Report - {time_period.capitalize()}")
+            send_ses(html_report, f"AWS Cost Report - {time_period.capitalize()}")
         else:
             print(
                 f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
             )
-
         return {"statusCode": 200, "body": "Cost report generated successfully."}
-
     except ClientError as exc:
         message = f"An error occurred with the Cost Explorer API: {str(exc)}"
     except ValueError as exc:
@@ -329,5 +313,4 @@ def lambda_handler(event, context):
     except Exception as exc:
         message = f"An unexpected error occurred: {str(exc)}"
         print(f"Full error details: {exc}")
-
     return {"statusCode": 500, "body": message}

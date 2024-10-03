@@ -27,7 +27,8 @@ resource "aws_lambda_function" "billing_report" {
 
   environment {
     variables = {
-      SNS_TOPIC_ARN = aws_sns_topic.billing_report.arn
+      SES_SENDER_EMAIL    = var.ses_sender_email
+      SES_RECIPIENT_EMAIL = var.ses_recipient_email
     }
   }
 
@@ -88,9 +89,10 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "sns:Publish"
+          "ses:SendEmail",
+          "ses:SendRawEmail"
         ]
-        Resource = aws_sns_topic.billing_report.arn
+        Resource = "*"
       }
     ]
   })
@@ -225,18 +227,19 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   }
 }
 
-# Create SNS topic for billing report
-resource "aws_sns_topic" "billing_report" {
-  name = var.sns_topic_name
-
-  tags = {
-    Name = var.sns_topic_name
-  }
+resource "aws_ses_domain_identity" "ses_domain" {
+  domain = var.ses_domain
 }
 
-# Create email subscription for SNS topic
-resource "aws_sns_topic_subscription" "email_subscription" {
-  topic_arn = aws_sns_topic.billing_report.arn
-  protocol  = "email"
-  endpoint  = var.email_subscription
+resource "aws_ses_email_identity" "ses_email" {
+  email = var.ses_sender_email
+}
+
+resource "aws_ses_domain_dkim" "ses_domain_dkim" {
+  domain = aws_ses_domain_identity.ses_domain.domain
+}
+
+resource "aws_ses_domain_mail_from" "ses_domain_mail_from" {
+  domain           = aws_ses_domain_identity.ses_domain.domain
+  mail_from_domain = "mail.${aws_ses_domain_identity.ses_domain.domain}"
 }

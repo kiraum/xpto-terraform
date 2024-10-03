@@ -3,14 +3,17 @@ variable "lambda_function_name" {
   type        = string
   default     = "billing-report-lambda"
 }
-
-variable "sns_topic_name" {
-  description = "Name of the SNS topic"
+variable "ses_sender_email" {
+  description = "Email address to send SES emails from"
   type        = string
-  default     = "billing-report-topic"
 }
 
-variable "email_subscription" {
-  description = "Email address for SNS subscription"
+variable "ses_recipient_email" {
+  description = "Email address to receive SES emails"
+  type        = string
+}
+
+variable "ses_domain" {
+  description = "Domain for SES"
   type        = string
 }

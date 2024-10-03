@@ -16,27 +16,24 @@ output "lambda_role_arn" {
   value       = aws_iam_role.lambda_role.arn
 }
 
-# Output the ARN of the SNS topic
-output "sns_topic_arn" {
-  description = "The ARN of the SNS topic for billing reports"
-  value       = aws_sns_topic.billing_report.arn
-}
-
 # Output the name of the CloudWatch event rule
 output "cloudwatch_event_rule_name" {
   description = "The name of the CloudWatch event rule for triggering the Lambda function"
   value       = aws_cloudwatch_event_rule.daily_trigger.name
 }
 
-
-# Output the email address subscribed to the SNS topic
-output "sns_subscription_email" {
-  description = "The email address subscribed to the billing report SNS topic"
-  value       = var.email_subscription
-}
-
 # Output the AWS account ID
 output "aws_account_id" {
   description = "The AWS account ID where the resources are deployed"
   value       = data.aws_caller_identity.current.account_id
+}
+
+output "ses_sender_email" {
+  description = "The email address used to send SES emails"
+  value       = var.ses_sender_email
+}
+
+output "ses_recipient_email" {
+  description = "The email address receiving SES emails"
+  value       = var.ses_recipient_email
 }

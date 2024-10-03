@@ -43,9 +43,11 @@ module "billing_report" {
   source = "../../modules/billing_report"
 
   lambda_function_name = "billing-report-lambda"
-  sns_topic_name       = "billing-report-topic"
-  email_subscription   = "tfgoncalves@xpto.it"
+  ses_sender_email     = "root@kiraum.it"
+  ses_recipient_email  = "tfgoncalves@xpto.it"
+  ses_domain           = "kiraum.it"
 }
+
 
 module "route53" {
   source = "../../modules/route53"
@@ -64,12 +66,14 @@ module "route53" {
             evaluate_target_health = false
           }
         },
+        # static site
         {
           name    = "www"
           type    = "CNAME"
           ttl     = 300
           records = ["dpop20p5u4112.cloudfront.net"]
         },
+        # proton mail
         {
           name    = ""
           type    = "MX"
@@ -108,6 +112,37 @@ module "route53" {
           type    = "CNAME"
           ttl     = 300
           records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        },
+        # AWS SES
+        {
+          name    = "ggbuvtqsuzeknaj7a2ktl5pvx7mshlpi._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["ggbuvtqsuzeknaj7a2ktl5pvx7mshlpi.dkim.amazonses.com"]
+        },
+        {
+          name    = "lqjeqnboh3ks6bjykmxleatdkkx3j3mg._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["lqjeqnboh3ks6bjykmxleatdkkx3j3mg.dkim.amazonses.com"]
+        },
+        {
+          name    = "ignxtbwrp3dwno4jru4mvxqy67lc5dc3._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["ignxtbwrp3dwno4jru4mvxqy67lc5dc3.dkim.amazonses.com"]
+        },
+        {
+          name    = "mail"
+          type    = "MX"
+          ttl     = 300
+          records = ["10 feedback-smtp.eu-central-1.amazonses.com"]
+        },
+        {
+          name    = "mail"
+          type    = "TXT"
+          ttl     = 300
+          records = ["v=spf1 include:amazonses.com ~all"]
         }
       ]
     }
