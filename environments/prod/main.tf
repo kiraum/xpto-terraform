@@ -42,9 +42,10 @@ provider "aws" {
 module "billing_report" {
   source = "../../modules/billing_report"
 
-  lambda_function_name   = "billing-report-lambda"
-  ses_sender_email       = "root@kiraum.it"
-  ses_domain             = "kiraum.it"
+  lambda_function_name = "billing-report-lambda"
+  # too much work to enable SES on AWS just for this notification
+  #ses_sender_email       = "root@kiraum.it"
+  #ses_domain             = "kiraum.it"
   recipient_emails       = ["tfgoncalves@xpto.it"]
   notification_service   = "SNS"
   daily_cost_threshold   = "0.01"

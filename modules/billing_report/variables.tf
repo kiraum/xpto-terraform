@@ -3,20 +3,20 @@ variable "lambda_function_name" {
   type        = string
   default     = "billing-report-lambda"
 }
-variable "ses_sender_email" {
-  description = "Email address to send SES emails from"
-  type        = string
-}
+#variable "ses_sender_email" {
+#  description = "Email address to send SES emails from"
+#  type        = string
+#}
 
 variable "recipient_emails" {
   description = "List of email addresses to receive emails"
   type        = list(string)
 }
 
-variable "ses_domain" {
-  description = "Domain for SES"
-  type        = string
-}
+#variable "ses_domain" {
+#  description = "Domain for SES"
+#  type        = string
+#}
 
 variable "notification_service" {
   description = "The notification service to use (SNS or SES)"
