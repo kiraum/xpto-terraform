@@ -90,6 +90,9 @@ module "route53" {
           type = "TXT"
           ttl  = 300
           records = [
+            # xpto.it
+            "protonmail-verification=cc3c2c9aebe9de240703d0be5df8c25c2adc5460",
+            # kiraum.it
             "protonmail-verification=4fd8734e27858d5bb727e0b811f506185942856d",
             "v=spf1 include:_spf.protonmail.ch ~all"
           ]
@@ -117,37 +120,6 @@ module "route53" {
           type    = "CNAME"
           ttl     = 300
           records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
-        },
-        # AWS SES
-        {
-          name    = "ggbuvtqsuzeknaj7a2ktl5pvx7mshlpi._domainkey"
-          type    = "CNAME"
-          ttl     = 300
-          records = ["ggbuvtqsuzeknaj7a2ktl5pvx7mshlpi.dkim.amazonses.com"]
-        },
-        {
-          name    = "lqjeqnboh3ks6bjykmxleatdkkx3j3mg._domainkey"
-          type    = "CNAME"
-          ttl     = 300
-          records = ["lqjeqnboh3ks6bjykmxleatdkkx3j3mg.dkim.amazonses.com"]
-        },
-        {
-          name    = "ignxtbwrp3dwno4jru4mvxqy67lc5dc3._domainkey"
-          type    = "CNAME"
-          ttl     = 300
-          records = ["ignxtbwrp3dwno4jru4mvxqy67lc5dc3.dkim.amazonses.com"]
-        },
-        {
-          name    = "mail"
-          type    = "MX"
-          ttl     = 300
-          records = ["10 feedback-smtp.eu-central-1.amazonses.com"]
-        },
-        {
-          name    = "mail"
-          type    = "TXT"
-          ttl     = 300
-          records = ["v=spf1 include:amazonses.com ~all"]
         }
       ]
     }
