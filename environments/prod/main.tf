@@ -1,5 +1,9 @@
+# Terraform configuration block
 terraform {
+  # Specify the minimum required Terraform version
   required_version = ">= 1.0.0"
+
+  # Define required providers
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -8,37 +12,38 @@ terraform {
   }
 }
 
-# Default provider configuration
+# Default AWS provider configuration
 provider "aws" {
   region = var.aws_region
 
+  # Set default tags for all resources created by this provider
   default_tags {
     tags = {
       Environment = var.environment
       ManagedBy   = "terraform"
       Project     = var.project
       CostCenter  = var.cost_center
-      # DataClassification = var.data_classification
     }
   }
 }
 
-# US East 1 provider configuration
+# US East 1 (N. Virginia) AWS provider configuration
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
 
+  # Set default tags for all resources created by this provider
   default_tags {
     tags = {
       Environment = var.environment
       ManagedBy   = "terraform"
       Project     = var.project
       CostCenter  = var.cost_center
-      # DataClassification = var.data_classification
     }
   }
 }
 
+# Billing report module
 module "billing_report" {
   source = "../../modules/billing_report"
 
@@ -54,6 +59,7 @@ module "billing_report" {
   yearly_cost_threshold  = "60.00"
 }
 
+# Route53 module for DNS management
 module "route53" {
   source = "../../modules/route53"
 
@@ -62,6 +68,7 @@ module "route53" {
       domain_name = "kiraum.it"
       comment     = "kiraum.it hosted zone"
       records = [
+        # A record for root domain
         {
           name = ""
           type = "A"
@@ -71,20 +78,21 @@ module "route53" {
             evaluate_target_health = false
           }
         },
-        # static site
+        # CNAME record for www subdomain
         {
           name    = "www"
           type    = "CNAME"
           ttl     = 300
           records = ["dpop20p5u4112.cloudfront.net"]
         },
-        # proton mail
+        # MX records for email routing
         {
           name    = ""
           type    = "MX"
           ttl     = 300
           records = ["10 mail.protonmail.ch", "20 mailsec.protonmail.ch"]
         },
+        # TXT records for various verifications and SPF
         {
           name = ""
           type = "TXT"
@@ -97,12 +105,14 @@ module "route53" {
             "v=spf1 include:_spf.protonmail.ch ~all"
           ]
         },
+        # DMARC record
         {
           name    = "_dmarc"
           type    = "TXT"
           ttl     = 300
           records = ["v=DMARC1; p=quarantine"]
         },
+        # DKIM records for ProtonMail
         {
           name    = "protonmail._domainkey"
           type    = "CNAME"
@@ -126,7 +136,7 @@ module "route53" {
   }
 }
 
-
+# Static website module
 module "static_website" {
   source = "../../modules/static_website"
 
@@ -138,6 +148,7 @@ module "static_website" {
     Project     = var.project
   }
 
+  # Specify providers for this module
   providers = {
     aws           = aws
     aws.us_east_1 = aws.us_east_1
