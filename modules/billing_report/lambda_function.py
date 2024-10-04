@@ -1,6 +1,7 @@
 """AWS Cost Explorer Lambda function to report costs for various time periods."""
 
 import datetime
+import json
 import os
 
 import boto3
@@ -116,15 +117,15 @@ def generate_text_report(
     text_template = """
 AWS Cost Report for {time_period}
 
-Period: {start_date} to {end_date}
+- Period: {start_date} to {end_date}
 
-Summary:
+- Summary:
 Current {time_period} cost: {current_costs:.7f} {unit}
 Previous {time_period} cost: {compare_costs:.7f} {unit}
 Difference: {difference:.7f} {unit}
 Threshold: {threshold:.7f} {unit}
 
-Breakdown by Service:
+- Breakdown by Service:
 {service_breakdown}
     """
 
@@ -290,8 +291,8 @@ def send_sns(message, subject):
     try:
         response = sns.publish(TopicArn=topic_arn, Message=message, Subject=subject)
         print(f"Message sent to SNS! Message ID: {response['MessageId']}")
-    except ClientError as e:
-        print(f"An error occurred while sending message via SNS: {e}")
+    except ClientError as exc:
+        print(f"An error occurred while sending message via SNS: {exc}")
 
 
 def send_ses(message, subject):
@@ -303,18 +304,18 @@ def send_ses(message, subject):
     """
     ses = boto3.client("ses")
     sender = os.environ["SES_SENDER_EMAIL"]
-    recipient = os.environ["SES_RECIPIENT_EMAIL"]
+    recipients = json.loads(os.environ["RECIPIENT_EMAILS"])
 
-    if not sender or not recipient:
+    if not sender or not recipients:
         raise ValueError(
-            "SES_SENDER_EMAIL and SES_RECIPIENT_EMAIL must be set in the environment variables"
+            "SES_SENDER_EMAIL and RECIPIENT_EMAILS must be set in the environment variables"
         )
 
     try:
         response = ses.send_email(
             Source=sender,
             Destination={
-                "ToAddresses": [recipient],
+                "ToAddresses": recipients,
             },
             Message={
                 "Subject": {
@@ -328,8 +329,8 @@ def send_ses(message, subject):
             },
         )
         print(f"Email sent! Message ID: {response['MessageId']}")
-    except ClientError as e:
-        print(f"An error occurred while sending email via SES: {e}")
+    except ClientError as exc:
+        print(f"An error occurred while sending email via SES: {exc}")
 
 
 def send_notification(message, subject):

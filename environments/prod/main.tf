@@ -45,15 +45,13 @@ module "billing_report" {
   lambda_function_name   = "billing-report-lambda"
   ses_sender_email       = "root@kiraum.it"
   ses_domain             = "kiraum.it"
-  recipient_email        = "tfgoncalves@xpto.it"
+  recipient_emails       = ["tfgoncalves@xpto.it"]
   notification_service   = "SNS"
   daily_cost_threshold   = "0.01"
   weekly_cost_threshold  = "1.00"
   monthly_cost_threshold = "5.00"
   yearly_cost_threshold  = "60.00"
 }
-
-
 
 module "route53" {
   source = "../../modules/route53"

@@ -8,9 +8,9 @@ variable "ses_sender_email" {
   type        = string
 }
 
-variable "recipient_email" {
-  description = "Email address to receive emails"
-  type        = string
+variable "recipient_emails" {
+  description = "List of email addresses to receive emails"
+  type        = list(string)
 }
 
 variable "ses_domain" {

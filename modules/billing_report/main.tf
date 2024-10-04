@@ -29,7 +29,7 @@ resource "aws_lambda_function" "billing_report" {
   environment {
     variables = {
       SES_SENDER_EMAIL       = var.ses_sender_email
-      recipient_email        = var.recipient_email
+      RECIPIENT_EMAILS       = jsonencode(var.recipient_emails)
       SNS_TOPIC_ARN          = aws_sns_topic.billing_report.arn
       NOTIFICATION_SERVICE   = var.notification_service
       DAILY_COST_THRESHOLD   = var.daily_cost_threshold
@@ -264,7 +264,8 @@ resource "aws_ses_domain_mail_from" "ses_domain_mail_from" {
 }
 
 resource "aws_sns_topic_subscription" "billing_report_email" {
+  count     = length(var.recipient_emails)
   topic_arn = aws_sns_topic.billing_report.arn
   protocol  = "email"
-  endpoint  = var.recipient_email
+  endpoint  = var.recipient_emails[count.index]
 }
