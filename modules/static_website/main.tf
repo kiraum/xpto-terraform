@@ -149,7 +149,7 @@ resource "aws_s3_object" "static_site_files" {
   source = "${path.module}/content/${each.value}"
   etag   = filemd5("${path.module}/content/${each.value}")
 
-  content_type = lookup(var.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
+  content_type = each.value == ".well-known/security.txt" ? "text/plain" : lookup(var.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
 
   tags = {
     CustomHeader = random_string.custom_header_value.result
@@ -240,6 +240,32 @@ resource "aws_cloudfront_distribution" "static_site" {
     min_ttl                = 0
     default_ttl            = 300
     max_ttl                = 86400
+  }
+
+  ordered_cache_behavior {
+    path_pattern     = "/.well-known/*"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.bucket_name}"
+
+    # response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.well_known_headers_policy.id
+
+
+    forwarded_values {
+      query_string = false
+      headers      = ["Origin", "Content-Type"]
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl                = 0
+    default_ttl            = 86400
+    max_ttl                = 31536000
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
   }
 
   price_class = var.cloudfront_price_class
@@ -442,7 +468,7 @@ resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
       override                   = true
     }
     content_security_policy {
-      content_security_policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+      content_security_policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
       override                = true
     }
     content_type_options {
@@ -451,15 +477,31 @@ resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
   }
 }
 
-resource "aws_s3_object" "security_txt" {
-  bucket = aws_s3_bucket.static_site.id
-  key    = ".well-known/security.txt"
-  source = "${path.module}/content/.well-known/security.txt"
-  etag   = filemd5("${path.module}/content/.well-known/security.txt")
+resource "aws_cloudfront_response_headers_policy" "well_known_headers_policy" {
+  name    = "well-known-headers-policy-${var.bucket_name}"
+  comment = "Headers policy for .well-known directory"
 
-  content_type = "text/plain"
+  security_headers_config {
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      preload                    = true
+      override                   = true
+    }
+    content_security_policy {
+      content_security_policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
+      override                = true
+    }
+    content_type_options {
+      override = true
+    }
+  }
 
-  tags = {
-    CustomHeader = random_string.custom_header_value.result
+  custom_headers_config {
+    items {
+      header   = "Content-Type"
+      override = true
+      value    = "text/plain"
+    }
   }
 }
