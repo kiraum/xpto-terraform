@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import urllib.request
 
 import boto3
 from botocore.exceptions import ClientError
@@ -14,6 +15,40 @@ MONTHLY_COST_THRESHOLD = float(os.environ.get("MONTHLY_COST_THRESHOLD", "0.01"))
 YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "0.01"))
 
 NOTIFICATION_SERVICE = os.environ.get("NOTIFICATION_SERVICE", "SNS").upper()
+
+
+def get_ssm_parameter(parameter_name):
+    """
+    Retrieve a parameter value from AWS Systems Manager Parameter Store.
+
+    Args:
+        parameter_name (str): The name of the parameter to retrieve.
+
+    Returns:
+        str: The decrypted value of the parameter.
+    """
+    ssm = boto3.client("ssm")
+    response = ssm.get_parameter(Name=parameter_name, WithDecryption=True)
+    return response["Parameter"]["Value"]
+
+
+def send_slack_notification(message):
+    """
+    Send a notification to a Slack channel using a webhook URL stored in SSM.
+
+    Args:
+        message (str): The message to send to the Slack channel.
+    """
+    webhook_url = get_ssm_parameter("/billing_report/slack_webhook_url")
+    payload = json.dumps({"text": message}).encode("utf-8")
+    req = urllib.request.Request(
+        webhook_url, data=payload, headers={"Content-Type": "application/json"}
+    )
+    with urllib.request.urlopen(req) as response:
+        if response.getcode() != 200:
+            print(
+                f"Failed to send Slack notification. Status code: {response.getcode()}"
+            )
 
 
 def calculate_time_periods(time_period, current_date):
@@ -426,6 +461,8 @@ def lambda_handler(event, context):
         if current_costs > cost_threshold:
             print("Cost threshold exceeded. Sending notification.")
             send_notification(report, f"AWS Cost Report - {time_period.capitalize()}")
+            if os.environ.get("ENABLE_SLACK") == "true":
+                send_slack_notification(report)
         else:
             print(
                 f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."

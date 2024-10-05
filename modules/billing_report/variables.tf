@@ -47,3 +47,14 @@ variable "yearly_cost_threshold" {
   type        = string
   default     = "0.01"
 }
+
+variable "enable_slack_notification" {
+  description = "Enable Slack webhook notification"
+  type        = bool
+  default     = false
+}
+
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for notifications"
+  type        = string
+}

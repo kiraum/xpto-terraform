@@ -51,12 +51,14 @@ module "billing_report" {
   # too much work to enable SES on AWS just for this notification
   #ses_sender_email       = "root@kiraum.it"
   #ses_domain             = "kiraum.it"
-  recipient_emails       = ["tfgoncalves@xpto.it"]
-  notification_service   = "SNS"
-  daily_cost_threshold   = "0.01"
-  weekly_cost_threshold  = "1.00"
-  monthly_cost_threshold = "5.00"
-  yearly_cost_threshold  = "60.00"
+  recipient_emails          = ["tfgoncalves@xpto.it"]
+  notification_service      = "SNS"
+  enable_slack_notification = true
+  slack_webhook_url         = var.slack_webhook_url
+  daily_cost_threshold      = "0.01"
+  weekly_cost_threshold     = "1.00"
+  monthly_cost_threshold    = "5.00"
+  yearly_cost_threshold     = "60.00"
 }
 
 # Route53 module for DNS management

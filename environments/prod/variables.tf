@@ -21,3 +21,8 @@ variable "cost_center" {
 #  description = "Data classification for tagging"
 #  type        = string
 #}
+
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for notifications"
+  type        = string
+}

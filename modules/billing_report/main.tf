@@ -16,6 +16,9 @@ terraform {
 # Get current AWS account information
 data "aws_caller_identity" "current" {}
 
+# Retrieve information about the current AWS region
+data "aws_region" "current" {}
+
 # Define Lambda function for billing report
 resource "aws_lambda_function" "billing_report" {
   filename         = data.archive_file.lambda_zip.output_path
@@ -32,6 +35,7 @@ resource "aws_lambda_function" "billing_report" {
       RECIPIENT_EMAILS       = jsonencode(var.recipient_emails)
       SNS_TOPIC_ARN          = aws_sns_topic.billing_report.arn
       NOTIFICATION_SERVICE   = var.notification_service
+      ENABLE_SLACK           = var.enable_slack_notification
       DAILY_COST_THRESHOLD   = var.daily_cost_threshold
       WEEKLY_COST_THRESHOLD  = var.weekly_cost_threshold
       MONTHLY_COST_THRESHOLD = var.monthly_cost_threshold
@@ -107,6 +111,13 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "sns:Publish"
         ]
         Resource = aws_sns_topic.billing_report.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter"
+        ]
+        Resource = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/billing_report/slack_webhook_url"
       }
     ]
   })
@@ -278,4 +289,11 @@ resource "aws_sns_topic_subscription" "billing_report_email" {
   topic_arn = aws_sns_topic.billing_report.arn
   protocol  = "email"
   endpoint  = var.recipient_emails[count.index]
+}
+
+# Store Slack webhook URL securely in SSM Parameter Store
+resource "aws_ssm_parameter" "slack_webhook_url" {
+  name  = "/billing_report/slack_webhook_url"
+  type  = "SecureString"
+  value = var.slack_webhook_url
 }
