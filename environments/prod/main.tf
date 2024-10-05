@@ -108,13 +108,13 @@ module "route53" {
             evaluate_target_health = false
           }
         },
+        # TLSA record
         {
           name    = "_443._tcp"
           type    = "TXT"
           ttl     = 300
           records = ["3 1 1 ${local.tlsa_hash_kiraum}"]
         },
-        # mail
         # MX records for email routing
         {
           name    = ""
