@@ -224,6 +224,8 @@ resource "aws_cloudfront_distribution" "static_site" {
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = "S3-${var.bucket_name}"
 
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
+
     forwarded_values {
       query_string = false
       headers      = ["Origin"]
@@ -426,4 +428,18 @@ resource "aws_cloudwatch_log_group" "disable_cloudfront_logs" {
       Name = "${aws_lambda_function.disable_cloudfront.function_name}-logs"
     }
   )
+}
+
+resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
+  name    = "security-headers-policy-${var.bucket_name}"
+  comment = "Security headers policy"
+
+  security_headers_config {
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      preload                    = true
+      override                   = true
+    }
+  }
 }
