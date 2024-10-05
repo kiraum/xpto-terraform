@@ -117,7 +117,7 @@ resource "aws_sns_topic" "billing_report" {
   name = "billing-report-topic"
 }
 
-# Create CloudWatch event rules
+# Create CloudWatch event rule for daily trigger
 resource "aws_cloudwatch_event_rule" "daily_trigger" {
   name                = "billing-report-daily-schedule"
   description         = "Triggers the billing report Lambda function daily at 7 AM CEST"
@@ -127,6 +127,7 @@ resource "aws_cloudwatch_event_rule" "daily_trigger" {
   }
 }
 
+# Create CloudWatch event rule for weekly trigger
 resource "aws_cloudwatch_event_rule" "weekly_trigger" {
   name                = "billing-report-weekly-schedule"
   description         = "Triggers the billing report Lambda function weekly on Mondays at 7 AM CEST"
@@ -136,6 +137,7 @@ resource "aws_cloudwatch_event_rule" "weekly_trigger" {
   }
 }
 
+# Create CloudWatch event rule for monthly trigger
 resource "aws_cloudwatch_event_rule" "monthly_trigger" {
   name                = "billing-report-monthly-schedule"
   description         = "Triggers the billing report Lambda function monthly on the 1st day at 7 AM CEST"
@@ -145,6 +147,7 @@ resource "aws_cloudwatch_event_rule" "monthly_trigger" {
   }
 }
 
+# Create CloudWatch event rule for yearly trigger
 resource "aws_cloudwatch_event_rule" "yearly_trigger" {
   name                = "billing-report-yearly-schedule"
   description         = "Triggers the billing report Lambda function yearly on January 1st at 7 AM CEST"
@@ -154,7 +157,7 @@ resource "aws_cloudwatch_event_rule" "yearly_trigger" {
   }
 }
 
-# Set Lambda function as target for CloudWatch events with input transformers
+# Set Lambda function as target for daily CloudWatch event
 resource "aws_cloudwatch_event_target" "daily_lambda_target" {
   rule      = aws_cloudwatch_event_rule.daily_trigger.name
   target_id = "TriggerBillingReportLambdaDaily"
@@ -167,6 +170,7 @@ resource "aws_cloudwatch_event_target" "daily_lambda_target" {
   }
 }
 
+# Set Lambda function as target for weekly CloudWatch event
 resource "aws_cloudwatch_event_target" "weekly_lambda_target" {
   rule      = aws_cloudwatch_event_rule.weekly_trigger.name
   target_id = "TriggerBillingReportLambdaWeekly"
@@ -179,6 +183,7 @@ resource "aws_cloudwatch_event_target" "weekly_lambda_target" {
   }
 }
 
+# Set Lambda function as target for monthly CloudWatch event
 resource "aws_cloudwatch_event_target" "monthly_lambda_target" {
   rule      = aws_cloudwatch_event_rule.monthly_trigger.name
   target_id = "TriggerBillingReportLambdaMonthly"
@@ -191,6 +196,7 @@ resource "aws_cloudwatch_event_target" "monthly_lambda_target" {
   }
 }
 
+# Set Lambda function as target for yearly CloudWatch event
 resource "aws_cloudwatch_event_target" "yearly_lambda_target" {
   rule      = aws_cloudwatch_event_rule.yearly_trigger.name
   target_id = "TriggerBillingReportLambdaYearly"
@@ -203,7 +209,7 @@ resource "aws_cloudwatch_event_target" "yearly_lambda_target" {
   }
 }
 
-# Grant CloudWatch permission to invoke Lambda
+# Grant CloudWatch permission to invoke Lambda for daily trigger
 resource "aws_lambda_permission" "allow_cloudwatch_daily" {
   statement_id  = "AllowExecutionFromCloudWatchDaily"
   action        = "lambda:InvokeFunction"
@@ -212,6 +218,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_daily" {
   source_arn    = aws_cloudwatch_event_rule.daily_trigger.arn
 }
 
+# Grant CloudWatch permission to invoke Lambda for weekly trigger
 resource "aws_lambda_permission" "allow_cloudwatch_weekly" {
   statement_id  = "AllowExecutionFromCloudWatchWeekly"
   action        = "lambda:InvokeFunction"
@@ -220,6 +227,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_weekly" {
   source_arn    = aws_cloudwatch_event_rule.weekly_trigger.arn
 }
 
+# Grant CloudWatch permission to invoke Lambda for monthly trigger
 resource "aws_lambda_permission" "allow_cloudwatch_monthly" {
   statement_id  = "AllowExecutionFromCloudWatchMonthly"
   action        = "lambda:InvokeFunction"
@@ -228,6 +236,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_monthly" {
   source_arn    = aws_cloudwatch_event_rule.monthly_trigger.arn
 }
 
+# Grant CloudWatch permission to invoke Lambda for yearly trigger
 resource "aws_lambda_permission" "allow_cloudwatch_yearly" {
   statement_id  = "AllowExecutionFromCloudWatchYearly"
   action        = "lambda:InvokeFunction"
@@ -263,6 +272,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 #  mail_from_domain = "mail.${aws_ses_domain_identity.ses_domain.domain}"
 #}
 
+# Create SNS topic subscription for email notifications
 resource "aws_sns_topic_subscription" "billing_report_email" {
   count     = length(var.recipient_emails)
   topic_arn = aws_sns_topic.billing_report.arn
