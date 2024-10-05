@@ -5,97 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tiago Felipe (kiraum) Gonçalves</title>
-    <style>
-        body {
-            background-image: url('background.jpg');
-            background-repeat: repeat;
-            background-color: #000;
-            color: #32CD32;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 20px;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .centered-text {
-            text-align: center;
-            width: 100%;
-        }
-        header h1 {
-            font-size: 2.5em;
-        }
-        header p {
-            font-size: 1.2em;
-        }
-        .profile-pic-placeholder {
-            width: 120px;
-            height: 120px;
-            background-image: url('avatar.png');
-            background-size: cover;
-            background-position: center;
-            border: none;
-            /*border: 2px solid #32CD32;*/
-            display: block;
-        }
-        section {
-            margin: 20px auto;
-            max-width: 900px;
-            padding: 20px;
-            border-left: 2px solid #32CD32;
-            background-color: rgba(0, 0, 0, 0.8); /* Added a semi-transparent background for better readability */
-        }
-        section h2 {
-            border-bottom: 1px solid #32CD32;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-            color: #32CD32;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        ul li {
-            margin-bottom: 10px;
-        }
-        .stars-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-        .skill-name {
-            flex: 1;
-        }
-        .stars {
-            flex-shrink: 0;
-            text-align: right;
-            width: 120px;
-            color: #1E90FF;
-        }
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            border-top: 1px solid #32CD32;
-            padding-top: 10px;
-        }
-        a {
-            color: #32CD32;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .flags {
-            margin-top: 10px;
-        }
-        .flags img {
-            width: 50px;
-            height: 35px;
-            margin: 0 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -193,65 +103,53 @@
 
 <section>
     <h2>Skills</h2>
-    <ul style="list-style: none; padding: 0;">
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Infrastructure</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★☆</span>
+    <ul class="skills-list">
+        <li class="stars-container">
+            <span class="skill-name">Infrastructure</span>
+            <span class="stars">★★★★★★★★★☆</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Network</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Network</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Security</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★☆☆</span>
+        <li class="stars-container">
+            <span class="skill-name">Security</span>
+            <span class="stars">★★★★★★★★☆☆</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Development</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★☆</span>
+        <li class="stars-container">
+            <span class="skill-name">Development</span>
+            <span class="stars">★★★★★★★★★☆</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Resilience</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Resilience</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Commitment</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Commitment</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Self-taught</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Self-taught</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Competence</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Competence</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Persistence</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Persistence</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">Results</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★★</span>
+        <li class="stars-container">
+            <span class="skill-name">Results</span>
+            <span class="stars">★★★★★★★★★★</span>
         </li>
-        <li class="stars-container" style="display: flex; align-items: center;">
-            <span class="skill-name" style="flex-basis: 30%; text-align: left;">BSD/*nix</span>
-            <span class="dots" style="flex-grow: 1; text-align: right; overflow: hidden;">..............................................................................................................</span>
-            <span class="stars" style="flex-shrink: 0;">★★★★★★★★★☆</span>
+        <li class="stars-container">
+            <span class="skill-name">BSD/*nix</span>
+            <span class="stars">★★★★★★★★★☆</span>
         </li>
     </ul>
 </section>
-
 
 <section>
     <h2>Academic Education</h2>
@@ -277,7 +175,7 @@
     <h2>Certifications</h2>
     <ul>
         <li>Cisco - CSCO12xxxx88:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>CCS Service Provider Core</li>
                 <li>CCNP Enterprise</li>
                 <li>CCS Enterprise Core</li>
@@ -293,9 +191,8 @@
                 <li>NSTISSI-4011</li>
             </ul>
         </li>
-        </br>
         <li>Juniper - JPR00xxxx41:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>JNCIP Service Provider</li>
                 <li>JNCIS Service Provider</li>
                 <li>JNCIS DevOps</li>
@@ -308,18 +205,16 @@
                 <li>JNCIA MistAI</li>
             </ul>
         </li>
-        </br>
         <li>LPI - LPI000xxxx20:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>BSD Specialist</li>
                 <li>LPIC-3 Virtualization and Containerization</li>
                 <li>LPIC-2</li>
                 <li>LPIC-1</li>
             </ul>
         </li>
-        </br>
         <li>AWS - AWS02xxxx53:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>AWS Certified Solutions Architect – Professional</li>
                 <li>AWS Certified DevOps Engineer - Professional</li>
                 <li>AWS Certified Advanced Networking – Specialty</li>
@@ -327,36 +222,31 @@
                 <li>AWS Certified Cloud Practitioner</li>
             </ul>
         </li>
-        </br>
         <li>Palo Alto Networks - PAN00xxxx21:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>PCNSE</li>
             </ul>
         </li>
-        </br>
         <li>RIPE NCC:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>RIPE NCC BGP Security Associate</li>
                 <li>RIPE NCC IPv6 Security Expert</li>
                 <li>RIPE NCC Database Associate</li>
                 <li>RIPE NCC IPv6 Fundamentals Analyst</li>
             </ul>
         </li>
-        </br>
         <li>EXIN - EXN6xxxx41:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>EXIN DevOps Professional</li>
             </ul>
         </li>
-        </br>
         <li>Furukawa – FOxxxx/14:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>FCP – Optical Fibers</li>
             </ul>
         </li>
-        </br>
         <li>GitHub:
-            <ul style="list-style-type: disc; margin-left: 20px;">
+            <ul>
                 <li>GitHub Foundations</li>
             </ul>
         </li>
