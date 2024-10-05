@@ -63,7 +63,7 @@ module "billing_report" {
 module "route53" {
   source = "../../modules/route53"
 
-  hosted_zones = {
+  domains = {
     "kiraum_it" = {
       domain_name = "kiraum.it"
       comment     = "kiraum.it hosted zone"
@@ -94,6 +94,12 @@ module "route53" {
           type    = "CNAME"
           ttl     = 300
           records = ["dpop20p5u4112.cloudfront.net"]
+        },
+        {
+          name    = "_443._tcp"
+          type    = "TXT"
+          ttl     = 300
+          records = ["3 1 1 ${local.tlsa_hash_kiraum}"]
         },
         # MX records for email routing
         {

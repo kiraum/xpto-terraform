@@ -1,4 +1,4 @@
-variable "hosted_zones" {
+variable "domains" {
   type = map(object({
     domain_name = string
     comment     = string
