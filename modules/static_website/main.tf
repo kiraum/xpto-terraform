@@ -441,5 +441,8 @@ resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
       preload                    = true
       override                   = true
     }
+    content_type_options {
+      override = true
+    }
   }
 }
