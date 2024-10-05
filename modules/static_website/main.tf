@@ -1,3 +1,4 @@
+# Terraform configuration
 terraform {
   required_version = ">= 1.0.0"
   required_providers {
@@ -17,22 +18,27 @@ terraform {
   }
 }
 
+# Get current AWS account information
 data "aws_caller_identity" "current" {}
 
+# Fetch the Route 53 zone for the domain
 data "aws_route53_zone" "base_domain" {
   name = var.domain_name
 }
 
+# Generate a random string for custom header value
 resource "random_string" "custom_header_value" {
   length  = 32
   special = false
 }
 
+# Create an S3 bucket for static site hosting
 resource "aws_s3_bucket" "static_site" {
   bucket = var.bucket_name
   tags   = var.tags
 }
 
+# Configure public access settings for the S3 bucket
 resource "aws_s3_bucket_public_access_block" "static_site" {
   bucket = aws_s3_bucket.static_site.id
 
@@ -42,6 +48,7 @@ resource "aws_s3_bucket_public_access_block" "static_site" {
   restrict_public_buckets = true
 }
 
+# Set up versioning for the S3 bucket
 resource "aws_s3_bucket_versioning" "static_site" {
   bucket = aws_s3_bucket.static_site.id
   versioning_configuration {
@@ -49,6 +56,7 @@ resource "aws_s3_bucket_versioning" "static_site" {
   }
 }
 
+# Configure server-side encryption for the S3 bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "static_site" {
   bucket = aws_s3_bucket.static_site.id
 
@@ -59,6 +67,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "static_site" {
   }
 }
 
+# Define the IAM policy for S3 bucket access
 data "aws_iam_policy_document" "s3_policy" {
   statement {
     sid    = "AllowCloudFrontServicePrincipalReadOnly"
@@ -141,6 +150,7 @@ data "aws_iam_policy_document" "s3_policy" {
   }
 }
 
+# Upload static site files to the S3 bucket
 resource "aws_s3_object" "static_site_files" {
   for_each = fileset("${path.module}/content", "**/*")
 
@@ -156,11 +166,13 @@ resource "aws_s3_object" "static_site_files" {
   }
 }
 
+# Apply the IAM policy to the S3 bucket
 resource "aws_s3_bucket_policy" "static_site" {
   bucket = aws_s3_bucket.static_site.id
   policy = data.aws_iam_policy_document.s3_policy.json
 }
 
+# Create an SSL certificate for the domain
 resource "aws_acm_certificate" "cert" {
   provider = aws.us_east_1
 
@@ -176,6 +188,7 @@ resource "aws_acm_certificate" "cert" {
   }
 }
 
+# Set up DNS records for certificate validation
 resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
@@ -193,12 +206,14 @@ resource "aws_route53_record" "cert_validation" {
   zone_id         = data.aws_route53_zone.base_domain.zone_id
 }
 
+# Validate the SSL certificate
 resource "aws_acm_certificate_validation" "cert" {
   provider                = aws.us_east_1
   certificate_arn         = aws_acm_certificate.cert.arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
+# Create a CloudFront distribution for content delivery
 resource "aws_cloudfront_distribution" "static_site" {
   provider = aws.us_east_1
 
@@ -248,9 +263,7 @@ resource "aws_cloudfront_distribution" "static_site" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${var.bucket_name}"
 
-    # response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.well_known_headers_policy.id
-
 
     forwarded_values {
       query_string = false
@@ -287,6 +300,7 @@ resource "aws_cloudfront_distribution" "static_site" {
   depends_on = [aws_acm_certificate_validation.cert]
 }
 
+# Configure origin access control for CloudFront
 resource "aws_cloudfront_origin_access_control" "static_site" {
   provider                          = aws.us_east_1
   name                              = "${var.bucket_name}-oac"
@@ -296,13 +310,14 @@ resource "aws_cloudfront_origin_access_control" "static_site" {
   signing_protocol                  = "sigv4"
 }
 
-# Lambda Function
+# Create a zip file for the Lambda function
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/disable_cloudfront.py"
   output_path = "${path.module}/disable_cloudfront_lambda.zip"
 }
 
+# Create a Lambda function to disable CloudFront distribution
 resource "aws_lambda_function" "disable_cloudfront" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "disable_cloudfront_distribution_${var.bucket_name}"
@@ -324,6 +339,7 @@ resource "aws_lambda_function" "disable_cloudfront" {
   }
 }
 
+# Define an IAM role for the Lambda function
 resource "aws_iam_role" "lambda_exec" {
   name = "disable_cloudfront_lambda_role_${var.bucket_name}"
 
@@ -339,11 +355,13 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
+# Attach policies to the Lambda IAM role
 resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   role       = aws_iam_role.lambda_exec.name
 }
 
+# Create custom policies for CloudFront access
 resource "aws_iam_role_policy" "cloudfront_access" {
   name = "cloudfront_access_${var.bucket_name}"
   role = aws_iam_role.lambda_exec.id
@@ -361,12 +379,12 @@ resource "aws_iam_role_policy" "cloudfront_access" {
   })
 }
 
-# SNS Topic for notifications
+# Set up an SNS topic for budget alerts
 resource "aws_sns_topic" "budget_alert" {
   name = "cloudfront-budget-alert-${var.bucket_name}"
 }
 
-# Budget
+# Create a budget for CloudFront usage
 resource "aws_budgets_budget" "cloudfront" {
   name         = "cloudfront-monthly-budget-${var.bucket_name}"
   budget_type  = "COST"
@@ -388,7 +406,7 @@ resource "aws_budgets_budget" "cloudfront" {
   }
 }
 
-# EventBridge Rule
+# Define an EventBridge rule for budget alerts
 resource "aws_cloudwatch_event_rule" "budget_alert" {
   name        = "cloudfront-budget-alert-${var.bucket_name}"
   description = "Trigger when CloudFront budget threshold is exceeded"
@@ -402,14 +420,14 @@ resource "aws_cloudwatch_event_rule" "budget_alert" {
   })
 }
 
-# EventBridge Target
+# Set the Lambda function as the target for the EventBridge rule
 resource "aws_cloudwatch_event_target" "lambda" {
   rule      = aws_cloudwatch_event_rule.budget_alert.name
   target_id = "TriggerLambda"
   arn       = aws_lambda_function.disable_cloudfront.arn
 }
 
-# Lambda permission for EventBridge
+# Grant EventBridge permission to invoke the Lambda function
 resource "aws_lambda_permission" "allow_eventbridge" {
   statement_id  = "AllowEventBridgeInvoke"
   function_name = aws_lambda_function.disable_cloudfront.function_name
@@ -418,6 +436,7 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   source_arn    = aws_cloudwatch_event_rule.budget_alert.arn
 }
 
+# Create custom policies for Lambda permissions
 resource "aws_iam_role_policy" "lambda_permissions" {
   name = "cloudfront_sns_access_${var.bucket_name}"
   role = aws_iam_role.lambda_exec.id
@@ -444,6 +463,7 @@ resource "aws_iam_role_policy" "lambda_permissions" {
   })
 }
 
+# Create a CloudWatch log group for the Lambda function
 resource "aws_cloudwatch_log_group" "disable_cloudfront_logs" {
   name              = "/aws/lambda/${aws_lambda_function.disable_cloudfront.function_name}"
   retention_in_days = 7
@@ -456,6 +476,7 @@ resource "aws_cloudwatch_log_group" "disable_cloudfront_logs" {
   )
 }
 
+# Define security headers policy for CloudFront
 resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
   name    = "security-headers-policy-${var.bucket_name}"
   comment = "Security headers policy"
@@ -477,6 +498,7 @@ resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
   }
 }
 
+# Define headers policy for .well-known directory
 resource "aws_cloudfront_response_headers_policy" "well_known_headers_policy" {
   name    = "well-known-headers-policy-${var.bucket_name}"
   comment = "Headers policy for .well-known directory"

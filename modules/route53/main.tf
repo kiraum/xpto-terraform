@@ -9,14 +9,17 @@ terraform {
   }
 }
 
+# Get current AWS account identity
 data "aws_caller_identity" "current" {}
 
+# Create Route53 hosted zones
 resource "aws_route53_zone" "zones" {
   for_each = var.domains
   name     = each.value.domain_name
   comment  = each.value.comment
 }
 
+# Create KMS keys for DNSSEC
 resource "aws_kms_key" "dnssec_key" {
   provider                 = aws.us_east_1
   for_each                 = var.domains
@@ -53,6 +56,7 @@ resource "aws_kms_key" "dnssec_key" {
   })
 }
 
+# Create Route53 key signing keys
 resource "aws_route53_key_signing_key" "key_signing_key" {
   for_each                   = var.domains
   hosted_zone_id             = aws_route53_zone.zones[each.key].id
@@ -60,6 +64,7 @@ resource "aws_route53_key_signing_key" "key_signing_key" {
   name                       = "${each.value.domain_name}-key"
 }
 
+# Enable DNSSEC for hosted zones
 resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   for_each = var.domains
   depends_on = [
@@ -68,6 +73,7 @@ resource "aws_route53_hosted_zone_dnssec" "dnssec" {
   hosted_zone_id = aws_route53_zone.zones[each.key].id
 }
 
+# Create Route53 records
 resource "aws_route53_record" "records" {
   for_each = { for record in flatten([
     for domain, zone in var.domains : [
