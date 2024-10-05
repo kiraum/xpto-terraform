@@ -101,6 +101,7 @@ module "route53" {
           ttl     = 300
           records = ["3 1 1 ${local.tlsa_hash_kiraum}"]
         },
+        # mail
         # MX records for email routing
         {
           name    = ""
