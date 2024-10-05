@@ -88,12 +88,25 @@ module "route53" {
             evaluate_target_health = false
           }
         },
-        # CNAME record for www subdomain
+        # A record for www domain
         {
-          name    = "www"
-          type    = "CNAME"
-          ttl     = 300
-          records = ["dpop20p5u4112.cloudfront.net"]
+          name = "www"
+          type = "A"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # AAAA record for www domain
+        {
+          name = "www"
+          type = "AAAA"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
         },
         {
           name    = "_443._tcp"
