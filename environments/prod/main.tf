@@ -150,6 +150,12 @@ module "route53" {
       ]
     }
   }
+
+  # Specify providers for this module
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
 }
 
 # Static website module
