@@ -445,5 +445,21 @@ resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
       content_security_policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
       override                = true
     }
+    x_content_type_options {
+      override = true
+    }
+  }
+}
+
+resource "aws_s3_object" "security_txt" {
+  bucket = aws_s3_bucket.static_site.id
+  key    = ".well-known/security.txt"
+  source = "${path.module}/content/.well-known/security.txt"
+  etag   = filemd5("${path.module}/content/.well-known/security.txt")
+
+  content_type = "text/plain"
+
+  tags = {
+    CustomHeader = random_string.custom_header_value.result
   }
 }
