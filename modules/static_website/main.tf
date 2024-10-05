@@ -215,6 +215,7 @@ resource "aws_cloudfront_distribution" "static_site" {
 
   enabled             = true
   is_ipv6_enabled     = true
+  http_version        = "http2and3"
   default_root_object = "index.html"
   aliases             = [var.domain_name, "*.${var.domain_name}"]
 

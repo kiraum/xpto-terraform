@@ -78,6 +78,16 @@ module "route53" {
             evaluate_target_health = false
           }
         },
+        # AAAA record for root domain
+        {
+          name = ""
+          type = "AAAA"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
         # CNAME record for www subdomain
         {
           name    = "www"
