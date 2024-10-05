@@ -31,5 +31,6 @@ variable "mime_types" {
     jpeg = "image/jpeg"
     gif  = "image/gif"
     ico  = "image/vnd.microsoft.icon"
+    txt  = "text/plain"
   }
 }

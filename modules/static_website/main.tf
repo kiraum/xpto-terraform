@@ -159,7 +159,7 @@ resource "aws_s3_object" "static_site_files" {
   source = "${path.module}/content/${each.value}"
   etag   = filemd5("${path.module}/content/${each.value}")
 
-  content_type = each.value == ".well-known/security.txt" ? "text/plain" : lookup(var.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
+  content_type = lookup(var.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
 
   tags = {
     CustomHeader = random_string.custom_header_value.result
