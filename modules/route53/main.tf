@@ -1,17 +1,3 @@
-terraform {
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source                = "hashicorp/aws"
-      configuration_aliases = [aws.us_east_1]
-      version               = ">= 4.0.0"
-    }
-  }
-}
-
-# Get current AWS account identity
-data "aws_caller_identity" "current" {}
-
 # Create Route53 hosted zones
 resource "aws_route53_zone" "zones" {
   for_each = var.domains

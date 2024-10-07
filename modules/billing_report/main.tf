@@ -1,24 +1,3 @@
-terraform {
-  required_version = ">= 1.0.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 4.0.0"
-    }
-    archive = {
-      source  = "hashicorp/archive"
-      version = ">= 2.0.0"
-    }
-  }
-}
-
-# Get current AWS account information
-data "aws_caller_identity" "current" {}
-
-# Retrieve information about the current AWS region
-data "aws_region" "current" {}
-
 # Define Lambda function for billing report
 resource "aws_lambda_function" "billing_report" {
   filename         = data.archive_file.lambda_zip.output_path
@@ -46,13 +25,6 @@ resource "aws_lambda_function" "billing_report" {
   tags = {
     Name = var.lambda_function_name
   }
-}
-
-# Create ZIP archive for Lambda function
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_file = "${path.module}/lambda_function.py"
-  output_path = "${path.module}/lambda_function.zip"
 }
 
 # Create IAM role for Lambda function
