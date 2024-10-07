@@ -35,12 +35,9 @@ def get_ssm_parameter(parameter_name):
 def send_slack_notification(message):
     """
     Send a notification to a Slack channel using a webhook URL stored in SSM.
-
-    Args:
-        message (str): The message to send to the Slack channel.
     """
     webhook_url = get_ssm_parameter("/billing_report/slack_webhook_url")
-    payload = json.dumps({"text": message}).encode("utf-8")
+    payload = json.dumps({"text": "AWS Cost Report", "blocks": message}).encode("utf-8")
     req = urllib.request.Request(
         webhook_url, data=payload, headers={"Content-Type": "application/json"}
     )
@@ -181,6 +178,102 @@ Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {
         threshold=cost_threshold,
         service_breakdown=service_breakdown,
     )
+
+
+def generate_slack_block_report(
+    time_period,
+    start,
+    end,
+    current_costs,
+    compare_costs,
+    unit,
+    response,
+    compare_response,
+    cost_threshold,
+):
+    """
+    Generate a Slack block-formatted cost report.
+    """
+    header = {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": f"AWS Cost Report for {time_period.capitalize()}",
+            "emoji": True,
+        },
+    }
+
+    context = {
+        "type": "context",
+        "elements": [
+            {
+                "type": "plain_text",
+                "text": f"Period: {start.isoformat()} to {end.isoformat()}",
+                "emoji": True,
+            }
+        ],
+    }
+
+    summary = {
+        "type": "section",
+        "fields": [
+            {
+                "type": "mrkdwn",
+                "text": f"*Current {time_period} cost:*\n{current_costs:.7f} {unit}",
+            },
+            {
+                "type": "mrkdwn",
+                "text": f"*Previous {time_period} cost:*\n{compare_costs:.7f} {unit}",
+            },
+            {
+                "type": "mrkdwn",
+                "text": f"*Difference:*\n{current_costs - compare_costs:.7f} {unit}",
+            },
+            {"type": "mrkdwn", "text": f"*Threshold:*\n{cost_threshold:.7f} {unit}"},
+        ],
+    }
+
+    divider = {"type": "divider"}
+
+    service_breakdown = []
+    current_services = {
+        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    }
+    previous_services = {
+        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
+        for result in compare_response["ResultsByTime"]
+        for group in result.get("Groups", [])
+    }
+
+    for service, cost in current_services.items():
+        if cost > 0:
+            previous_cost = previous_services.get(service, 0)
+            difference = cost - previous_cost
+            service_breakdown.append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*{service}*\nCurrent: {cost:.7f} {unit} | Previous: {previous_cost:.7f} {unit} | Difference: {difference:.7f} {unit}",
+                    },
+                }
+            )
+
+    blocks = [
+        header,
+        context,
+        divider,
+        summary,
+        divider,
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "*Breakdown by Service:*"},
+        },
+    ] + service_breakdown
+
+    return {"blocks": blocks}
 
 
 def generate_html_report(
@@ -451,7 +544,18 @@ def lambda_handler(event, context):
                 f"AWS Cost Report - {time_period.capitalize()} (Period: {start.isoformat()} to {end.isoformat()})",
             )
             if os.environ.get("ENABLE_SLACK") == "true":
-                send_slack_notification(report)
+                slack_report = generate_slack_block_report(
+                    time_period,
+                    start,
+                    end,
+                    current_costs,
+                    compare_costs,
+                    unit,
+                    response,
+                    compare_response,
+                    cost_threshold,
+                )
+                send_slack_notification(slack_report["blocks"])
         else:
             print(
                 f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
