@@ -57,6 +57,7 @@ ul li {
     width: 100%;
 }
 .skill-name {
+    white-space: nowrap;
     flex: 1;
 }
 .stars {
