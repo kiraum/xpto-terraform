@@ -3,25 +3,16 @@ variable "lambda_function_name" {
   type        = string
   default     = "billing-report-lambda"
 }
-#variable "ses_sender_email" {
-#  description = "Email address to send SES emails from"
-#  type        = string
-#}
 
 variable "recipient_emails" {
   description = "List of email addresses to receive emails"
   type        = list(string)
 }
 
-#variable "ses_domain" {
-#  description = "Domain for SES"
-#  type        = string
-#}
-
-variable "notification_service" {
-  description = "The notification service to use (SNS or SES)"
-  type        = string
-  default     = "SNS"
+variable "enable_email_notification" {
+  description = "Enable email notifications via SNS"
+  type        = bool
+  default     = false
 }
 
 variable "daily_cost_threshold" {

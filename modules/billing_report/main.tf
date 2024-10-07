@@ -10,15 +10,14 @@ resource "aws_lambda_function" "billing_report" {
 
   environment {
     variables = {
-      #SES_SENDER_EMAIL       = var.ses_sender_email
-      RECIPIENT_EMAILS       = jsonencode(var.recipient_emails)
-      SNS_TOPIC_ARN          = aws_sns_topic.billing_report.arn
-      NOTIFICATION_SERVICE   = var.notification_service
-      ENABLE_SLACK           = var.enable_slack_notification
-      DAILY_COST_THRESHOLD   = var.daily_cost_threshold
-      WEEKLY_COST_THRESHOLD  = var.weekly_cost_threshold
-      MONTHLY_COST_THRESHOLD = var.monthly_cost_threshold
-      YEARLY_COST_THRESHOLD  = var.yearly_cost_threshold
+      RECIPIENT_EMAILS          = jsonencode(var.recipient_emails)
+      SNS_TOPIC_ARN             = aws_sns_topic.billing_report.arn
+      ENABLE_EMAIL_NOTIFICATION = var.enable_email_notification
+      ENABLE_SLACK              = var.enable_slack_notification
+      DAILY_COST_THRESHOLD      = var.daily_cost_threshold
+      WEEKLY_COST_THRESHOLD     = var.weekly_cost_threshold
+      MONTHLY_COST_THRESHOLD    = var.monthly_cost_threshold
+      YEARLY_COST_THRESHOLD     = var.yearly_cost_threshold
     }
   }
 
@@ -69,14 +68,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
         ]
         Resource = "*"
       },
-      #{
-      #  Effect = "Allow"
-      #  Action = [
-      #    "ses:SendEmail",
-      #    "ses:SendRawEmail"
-      #  ]
-      #  Resource = "*"
-      #},
       {
         Effect = "Allow"
         Action = [
@@ -237,23 +228,6 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
     Name = "${var.lambda_function_name}-logs"
   }
 }
-
-#resource "aws_ses_domain_identity" "ses_domain" {
-#  domain = var.ses_domain
-#}
-
-#resource "aws_ses_email_identity" "ses_email" {
-#  email = var.ses_sender_email
-#}
-
-#resource "aws_ses_domain_dkim" "ses_domain_dkim" {
-#  domain = aws_ses_domain_identity.ses_domain.domain
-#}
-
-#resource "aws_ses_domain_mail_from" "ses_domain_mail_from" {
-#  domain           = aws_ses_domain_identity.ses_domain.domain
-#  mail_from_domain = "mail.${aws_ses_domain_identity.ses_domain.domain}"
-#}
 
 # Create SNS topic subscription for email notifications
 resource "aws_sns_topic_subscription" "billing_report_email" {

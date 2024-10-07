@@ -28,11 +28,6 @@ output "aws_account_id" {
   value       = data.aws_caller_identity.current.account_id
 }
 
-#output "ses_sender_email" {
-#  description = "The email address used to send SES emails"
-#  value       = var.ses_sender_email
-#}
-
 output "recipient_emails" {
   description = "The email address receiving emails"
   value       = var.recipient_emails

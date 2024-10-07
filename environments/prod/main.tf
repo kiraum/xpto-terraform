@@ -47,12 +47,9 @@ provider "aws" {
 module "billing_report" {
   source = "../../modules/billing_report"
 
-  lambda_function_name = "billing-report-lambda"
-  # too much work to enable SES on AWS just for this notification
-  #ses_sender_email       = "root@kiraum.it"
-  #ses_domain             = "kiraum.it"
+  lambda_function_name      = "billing-report-lambda"
   recipient_emails          = ["tfgoncalves@xpto.it"]
-  notification_service      = "SNS"
+  enable_email_notification = true
   enable_slack_notification = true
   slack_webhook_url         = var.slack_webhook_url
   daily_cost_threshold      = "0.01"
@@ -60,6 +57,7 @@ module "billing_report" {
   monthly_cost_threshold    = "5.00"
   yearly_cost_threshold     = "60.00"
 }
+
 
 # Route53 module for DNS management
 module "route53" {
@@ -130,8 +128,6 @@ module "route53" {
           type = "TXT"
           ttl  = 300
           records = [
-            # xpto.it
-            "protonmail-verification=cc3c2c9aebe9de240703d0be5df8c25c2adc5460",
             # kiraum.it
             "protonmail-verification=4fd8734e27858d5bb727e0b811f506185942856d",
             "v=spf1 include:_spf.protonmail.ch ~all"
@@ -231,8 +227,6 @@ module "route53" {
           records = [
             # xpto.it
             "protonmail-verification=cc3c2c9aebe9de240703d0be5df8c25c2adc5460",
-            # kiraum.it
-            "protonmail-verification=4fd8734e27858d5bb727e0b811f506185942856d",
             "v=spf1 include:_spf.protonmail.ch ~all"
           ]
         },
@@ -279,7 +273,7 @@ module "static_website" {
 
   bucket_name  = "xpto-static-website-bucket"
   domain_names = ["kiraum.it"]
-  #domain_names           = ["kiraum.it", "xpto.it"]
+  # domain_names           = ["kiraum.it", "xpto.it"]
   cloudfront_price_class = "PriceClass_100"
 
   tags = {
