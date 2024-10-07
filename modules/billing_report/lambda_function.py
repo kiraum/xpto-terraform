@@ -10,9 +10,9 @@ from botocore.exceptions import ClientError
 
 # Configurable cost thresholds for different time periods
 DAILY_COST_THRESHOLD = float(os.environ.get("DAILY_COST_THRESHOLD", "0.01"))
-WEEKLY_COST_THRESHOLD = float(os.environ.get("WEEKLY_COST_THRESHOLD", "0.01"))
-MONTHLY_COST_THRESHOLD = float(os.environ.get("MONTHLY_COST_THRESHOLD", "0.01"))
-YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "0.01"))
+WEEKLY_COST_THRESHOLD = float(os.environ.get("WEEKLY_COST_THRESHOLD", "1.00"))
+MONTHLY_COST_THRESHOLD = float(os.environ.get("MONTHLY_COST_THRESHOLD", "4.00"))
+YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "48.00"))
 
 
 def get_ssm_parameter(parameter_name):
