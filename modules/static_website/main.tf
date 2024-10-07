@@ -21,9 +21,11 @@ terraform {
 # Get current AWS account information
 data "aws_caller_identity" "current" {}
 
-# Fetch the Route 53 zone for the domain
+# Fetch the Route 53 zone for each domain
 data "aws_route53_zone" "base_domain" {
-  name = var.domain_name
+  for_each     = toset(var.domain_names)
+  name         = each.value
+  private_zone = false
 }
 
 # Generate a random string for custom header value
@@ -172,14 +174,14 @@ resource "aws_s3_bucket_policy" "static_site" {
   policy = data.aws_iam_policy_document.s3_policy.json
 }
 
-# Create an SSL certificate for the domain
+# Create an SSL certificate for each domain
 resource "aws_acm_certificate" "cert" {
-  provider = aws.us_east_1
+  for_each = toset(var.domain_names)
 
-  domain_name       = var.domain_name
-  validation_method = "DNS"
-
-  subject_alternative_names = ["*.${var.domain_name}"]
+  provider                  = aws.us_east_1
+  domain_name               = each.value
+  subject_alternative_names = ["*.${each.value}"]
+  validation_method         = "DNS"
 
   tags = var.tags
 
@@ -191,10 +193,11 @@ resource "aws_acm_certificate" "cert" {
 # Set up DNS records for certificate validation
 resource "aws_route53_record" "cert_validation" {
   for_each = {
-    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
+    for domain in var.domain_names : domain => {
+      name    = tolist(aws_acm_certificate.cert[domain].domain_validation_options)[0].resource_record_name
+      record  = tolist(aws_acm_certificate.cert[domain].domain_validation_options)[0].resource_record_value
+      type    = tolist(aws_acm_certificate.cert[domain].domain_validation_options)[0].resource_record_type
+      zone_id = data.aws_route53_zone.base_domain[domain].zone_id
     }
   }
 
@@ -203,15 +206,19 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.base_domain.zone_id
+  zone_id         = each.value.zone_id
 }
 
-# Validate the SSL certificate
+
+# Validate the SSL certificates
 resource "aws_acm_certificate_validation" "cert" {
+  for_each = aws_acm_certificate.cert
+
   provider                = aws.us_east_1
-  certificate_arn         = aws_acm_certificate.cert.arn
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+  certificate_arn         = each.value.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn if record.name == tolist(each.value.domain_validation_options)[0].resource_record_name]
 }
+
 
 # Create a CloudFront distribution for content delivery
 resource "aws_cloudfront_distribution" "static_site" {
@@ -232,7 +239,7 @@ resource "aws_cloudfront_distribution" "static_site" {
   is_ipv6_enabled     = true
   http_version        = "http2and3"
   default_root_object = "index.html"
-  aliases             = [var.domain_name, "*.${var.domain_name}"]
+  aliases             = flatten([for domain in var.domain_names : [domain, "*.${domain}"]])
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -290,7 +297,7 @@ resource "aws_cloudfront_distribution" "static_site" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.cert.arn
+    acm_certificate_arn      = aws_acm_certificate.cert[var.domain_names[0]].arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
@@ -304,7 +311,7 @@ resource "aws_cloudfront_distribution" "static_site" {
 resource "aws_cloudfront_origin_access_control" "static_site" {
   provider                          = aws.us_east_1
   name                              = "${var.bucket_name}-oac"
-  description                       = "OAC for ${var.domain_name}"
+  description                       = "OAC for ${join(", ", var.domain_names)}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"

@@ -1,11 +1,11 @@
+variable "domain_names" {
+  type        = list(string)
+  description = "The domain names for the static website"
+}
+
 variable "bucket_name" {
   type        = string
   description = "The name of the S3 bucket to create"
-}
-
-variable "domain_name" {
-  type        = string
-  description = "The domain name for the static website"
 }
 
 variable "cloudfront_price_class" {

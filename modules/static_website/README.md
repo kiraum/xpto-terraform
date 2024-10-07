@@ -55,6 +55,8 @@ module "static_website" {
 - A monthly budget of $1 USD is set for CloudFront usage with an alert at 80% threshold.
 - The Lambda function logs are retained for 7 days in CloudWatch.
 
+Order to create => AWS R53 => AWS CF => TLSA
+
 ## Requirements
 
 - Terraform >= 1.0.0

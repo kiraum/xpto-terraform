@@ -164,6 +164,105 @@ module "route53" {
           records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
         }
       ]
+    },
+    "xpto_it" = {
+      domain_name = "xpto.it"
+      comment     = "xpto.it hosted zone"
+      records = [
+        # A record for root domain
+        {
+          name = ""
+          type = "A"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # AAAA record for root domain
+        {
+          name = ""
+          type = "AAAA"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # A record for www domain
+        {
+          name = "www"
+          type = "A"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # AAAA record for www domain
+        {
+          name = "www"
+          type = "AAAA"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # TLSA record
+        #{
+        #  name    = "_443._tcp"
+        #  type    = "TXT"
+        #  ttl     = 300
+        #  records = ["3 1 1 ${local.tlsa_hash_xpto_it}"]
+        #},
+        # MX records for email routing
+        {
+          name    = ""
+          type    = "MX"
+          ttl     = 300
+          records = ["10 mail.protonmail.ch", "20 mailsec.protonmail.ch"]
+        },
+        # TXT records for various verifications and SPF
+        {
+          name = ""
+          type = "TXT"
+          ttl  = 300
+          records = [
+            # xpto.it
+            "protonmail-verification=cc3c2c9aebe9de240703d0be5df8c25c2adc5460",
+            # kiraum.it
+            "protonmail-verification=4fd8734e27858d5bb727e0b811f506185942856d",
+            "v=spf1 include:_spf.protonmail.ch ~all"
+          ]
+        },
+        # DMARC record
+        {
+          name    = "_dmarc"
+          type    = "TXT"
+          ttl     = 300
+          records = ["v=DMARC1; p=quarantine"]
+        },
+        # DKIM records for ProtonMail
+        {
+          name    = "protonmail._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        },
+        {
+          name    = "protonmail2._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail2.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        },
+        {
+          name    = "protonmail3._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        }
+      ]
     }
   }
 
@@ -178,9 +277,11 @@ module "route53" {
 module "static_website" {
   source = "../../modules/static_website"
 
-  bucket_name            = "xpto-static-website-bucket"
-  domain_name            = "kiraum.it"
+  bucket_name  = "xpto-static-website-bucket"
+  domain_names = ["kiraum.it"]
+  #domain_names           = ["kiraum.it", "xpto.it"]
   cloudfront_price_class = "PriceClass_100"
+
   tags = {
     Environment = var.environment
     Project     = var.project
