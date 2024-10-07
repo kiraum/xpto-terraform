@@ -6,6 +6,7 @@ import os
 from unittest.mock import MagicMock
 
 import boto3
+
 from lambda_function import lambda_handler
 
 
