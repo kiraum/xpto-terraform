@@ -25,4 +25,5 @@ variable "cost_center" {
 variable "slack_webhook_url" {
   description = "Slack webhook URL for notifications"
   type        = string
+  default     = ""
 }

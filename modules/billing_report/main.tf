@@ -263,9 +263,10 @@ resource "aws_sns_topic_subscription" "billing_report_email" {
   endpoint  = var.recipient_emails[count.index]
 }
 
-# Store Slack webhook URL securely in SSM Parameter Store
+# Create or update the SSM parameter
 resource "aws_ssm_parameter" "slack_webhook_url" {
   name  = "/billing_report/slack_webhook_url"
-  type  = "SecureString"
-  value = var.slack_webhook_url
+  type  = "SecureString" # Store the value as an encrypted string
+  value = var.slack_webhook_url != "" ? var.slack_webhook_url : data.aws_ssm_parameter.existing_slack_webhook_url.value
+  # Use the new value if provided, otherwise keep the existing value
 }

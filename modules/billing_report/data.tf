@@ -10,3 +10,9 @@ data "archive_file" "lambda_zip" {
   source_file = "${path.module}/lambda_function.py"
   output_path = "${path.module}/lambda_function.zip"
 }
+
+# Retrieve the existing SSM parameter value
+data "aws_ssm_parameter" "existing_slack_webhook_url" {
+  name            = "/billing_report/slack_webhook_url"
+  with_decryption = true # Ensure we get the decrypted value
+}
