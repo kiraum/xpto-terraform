@@ -53,17 +53,23 @@ ul li {
 }
 .stars-container {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: baseline;
     width: 100%;
 }
 .skill-name {
-    white-space: nowrap;
+    flex: 0 0 auto;
+    margin-right: 10px;
+}
+.dots {
     flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
 }
 .stars {
-    flex-shrink: 0;
-    text-align: right;
-    width: 120px;
+    flex: 0 0 auto;
+    margin-left: 10px;
     color: #1E90FF;
 }
 footer {
@@ -91,8 +97,34 @@ a:hover {
     content: "• ";
     color: #32CD32;
 }
-
 .certification-list li {
     padding-left: 1em;
     text-indent: -1em;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    header {
+        flex-direction: column;
+    }
+    .profile-pic-placeholder {
+        margin-bottom: 20px;
+    }
+    .stars-container {
+        flex-wrap: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.8em;
+    }
+    header p {
+        font-size: 1em;
+    }
+    section h2 {
+        font-size: 1.5em;
+    }
 }
