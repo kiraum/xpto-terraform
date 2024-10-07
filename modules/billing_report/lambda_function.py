@@ -136,29 +136,13 @@ def generate_text_report(
 ):
     """
     Generate a detailed text cost report.
-    Args:
-        time_period (str): The time period of the report.
-        start (datetime.date): The start date of the report.
-        end (datetime.date): The end date of the report.
-        current_costs (float): The total costs for the current period.
-        compare_costs (float): The total costs for the comparison period.
-        unit (str): The currency unit.
-        response (dict): The response from AWS Cost Explorer for the current period.
-        compare_response (dict): The response from AWS Cost Explorer for the comparison period.
-        cost_threshold (float): The cost threshold for the time period.
-    Returns:
-        str: A formatted text cost report.
     """
     text_template = """
-AWS Cost Report for {time_period}
-
-- Period: {start_date} to {end_date}
-
-- Summary:
-Current {time_period} cost: {current_costs:.7f} {unit}
-Previous {time_period} cost: {compare_costs:.7f} {unit}
-Difference: {difference:.7f} {unit}
+AWS Cost Report for {time_period} (Period: {start_date} to {end_date})
 Threshold: {threshold:.7f} {unit}
+
+Summary:
+Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {compare_costs:.7f} {unit} | Difference: {difference:.7f} {unit}
 
 - Breakdown by Service:
 {service_breakdown}
@@ -174,15 +158,17 @@ Threshold: {threshold:.7f} {unit}
         for result in compare_response["ResultsByTime"]
         for group in result.get("Groups", [])
     }
+
+    max_service_length = max(len(service) for service in current_services.keys())
+    service_column_width = max_service_length + 10  # Add 10 underscores
+
     service_breakdown = ""
     for service, cost in current_services.items():
         if cost > 0:
             previous_cost = previous_services.get(service, 0)
             difference = cost - previous_cost
-            service_breakdown += f"{service}:\n"
-            service_breakdown += f"  Current: {cost:.7f} {unit}\n"
-            service_breakdown += f"  Previous: {previous_cost:.7f} {unit}\n"
-            service_breakdown += f"  Difference: {difference:.7f} {unit}\n\n"
+            padded_service = service + "_" * (service_column_width - len(service))
+            service_breakdown += f"{padded_service}| Current: {cost:>14.7f} {unit} | Previous: {previous_cost:>14.7f} {unit} | Difference: {difference:>14.7f} {unit}\n"
 
     return text_template.format(
         time_period=time_period,
@@ -460,7 +446,10 @@ def lambda_handler(event, context):
             )
         if current_costs > cost_threshold:
             print("Cost threshold exceeded. Sending notification.")
-            send_notification(report, f"AWS Cost Report - {time_period.capitalize()}")
+            send_notification(
+                report,
+                f"AWS Cost Report - {time_period.capitalize()} (Period: {start.isoformat()} to {end.isoformat()})",
+            )
             if os.environ.get("ENABLE_SLACK") == "true":
                 send_slack_notification(report)
         else:
