@@ -49,40 +49,32 @@ def send_slack_notification(message):
 def calculate_time_periods(time_period, current_date):
     """
     Calculate start and end dates for the given time period.
-    Args:
-        time_period (str): The time period to calculate (daily, weekly, monthly, yearly).
-        current_date (datetime.date): The current date.
-    Returns:
-        tuple: start, end, compare_start, compare_end dates.
-    Raises:
-        ValueError: If an invalid time period is provided.
     """
-    periods = {
-        "daily": (1, 1),
-        "weekly": (7, 7),
-        "monthly": ("month", 1),
-        "yearly": ("year", "year"),
-    }
-    if time_period not in periods:
+    end = current_date - datetime.timedelta(days=1)
+
+    if time_period == "daily":
+        start = end
+        compare_start = end - datetime.timedelta(days=1)
+        compare_end = compare_start
+    elif time_period == "weekly":
+        start = end - datetime.timedelta(days=6)
+        compare_start = start - datetime.timedelta(days=7)
+        compare_end = compare_start + datetime.timedelta(days=6)
+    elif time_period == "monthly":
+        start = end.replace(day=1)
+        compare_start = (start - datetime.timedelta(days=1)).replace(day=1)
+        compare_end = start - datetime.timedelta(days=1)
+    elif time_period == "yearly":
+        start = end.replace(month=1, day=1)
+        compare_start = start.replace(year=start.year - 1)
+        compare_end = compare_start.replace(
+            year=compare_start.year + 1
+        ) - datetime.timedelta(days=1)
+    else:
         raise ValueError(
             f"Invalid time period: {time_period}. Must be daily, weekly, monthly, or yearly."
         )
-    delta, compare_delta = periods[time_period]
-    if time_period == "daily":
-        start = current_date - datetime.timedelta(days=1)
-        end = start
-        compare_start = start - datetime.timedelta(days=1)
-        compare_end = compare_start
-    elif isinstance(delta, int):
-        start = current_date - datetime.timedelta(days=delta)
-        end = current_date
-        compare_start = start - datetime.timedelta(days=compare_delta)
-        compare_end = start
-    else:
-        start = current_date.replace(**{delta: 1})
-        end = current_date
-        compare_start = (start - datetime.timedelta(days=1)).replace(**{delta: 1})
-        compare_end = start
+
     return start, end, compare_start, compare_end
 
 
@@ -133,10 +125,10 @@ def generate_text_report(
     Generate a detailed text cost report.
     """
     text_template = """
-AWS Cost Report for {time_period} (Period: {start_date} to {end_date})
+- AWS Cost Report for {time_period} (Period: {start_date} to {end_date})
 Threshold: {threshold:.7f} {unit}
 
-Summary:
+- Summary:
 Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {compare_costs:.7f} {unit} | Difference: {difference:.7f} {unit}
 
 - Breakdown by Service:
@@ -154,21 +146,16 @@ Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {
         for group in result.get("Groups", [])
     }
 
-    max_service_length = max(len(service) for service in current_services.keys())
-    service_column_width = max_service_length + 10  # Add 10 underscores
-
     service_breakdown = ""
-    for service, cost in current_services.items():
-        if cost > 0:
-            previous_cost = previous_services.get(service, 0)
-            difference = cost - previous_cost
-            padded_service = service + "_" * (service_column_width - len(service))
-            service_breakdown += f"{padded_service}| Current: {cost:>14.7f} {unit} | Previous: {previous_cost:>14.7f} {unit} | Difference: {difference:>14.7f} {unit}\n"
+    for service, cost in sorted(current_services.items()):
+        previous_cost = previous_services.get(service, 0)
+        difference = cost - previous_cost
+        service_breakdown += f"{service}\nCurrent: {cost:.7f} {unit} || Previous: {previous_cost:.7f} {unit} || Difference: {difference:.7f} {unit}\n\n"
 
     return text_template.format(
         time_period=time_period,
         start_date=start.isoformat(),
-        end_date=(end - datetime.timedelta(days=1)).isoformat(),
+        end_date=end.isoformat(),
         current_costs=current_costs,
         compare_costs=compare_costs,
         unit=unit,
@@ -297,56 +284,50 @@ def send_sns(message, subject):
 def lambda_handler(event, context):
     """
     AWS Lambda function to report AWS costs for various time periods.
-    This function retrieves cost data from AWS Cost Explorer for a specified time period,
-    compares it with the previous period, and generates a cost report. If the cost exceeds
-    a predefined threshold, it sends a notification via SNS.
-    Args:
-        event (dict): The Lambda event object containing input parameters.
-            - time_period (str, optional): The time period for the cost report.
-              Valid values are 'daily', 'weekly', 'monthly', 'yearly'. Defaults to 'daily'.
-        context (object): The Lambda context object (not used in this function).
-    Returns:
-        dict: A dictionary containing the status code and response body.
-            - statusCode (int): HTTP status code (200 for success, 500 for errors).
-            - body (str): A message describing the result or error.
     """
     ce = boto3.client("ce")
     time_period = event.get("time_period", "daily").lower()
     current_date = datetime.datetime.utcnow().date()
+
     try:
         start, end, compare_start, compare_end = calculate_time_periods(
             time_period, current_date
         )
-        if time_period == "daily":
-            end = end + datetime.timedelta(days=1)
-            compare_end = compare_end + datetime.timedelta(days=1)
+
         response = ce.get_cost_and_usage(
-            TimePeriod={"Start": start.isoformat(), "End": end.isoformat()},
+            TimePeriod={
+                "Start": start.strftime("%Y-%m-%d"),
+                "End": (end + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+            },
             Granularity="DAILY",
             Metrics=["UnblendedCost"],
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
         compare_response = ce.get_cost_and_usage(
             TimePeriod={
-                "Start": compare_start.isoformat(),
-                "End": compare_end.isoformat(),
+                "Start": compare_start.strftime("%Y-%m-%d"),
+                "End": (compare_end + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             },
             Granularity="DAILY",
             Metrics=["UnblendedCost"],
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
+
         current_costs, compare_costs, unit = process_cost_data(
             response, compare_response
         )
+
         if current_costs is None:
             message = f"No cost data available for the specified {time_period} period."
             return {"statusCode": 200, "body": message}
+
         cost_threshold = {
             "daily": DAILY_COST_THRESHOLD,
             "weekly": WEEKLY_COST_THRESHOLD,
             "monthly": MONTHLY_COST_THRESHOLD,
             "yearly": YEARLY_COST_THRESHOLD,
         }.get(time_period, DAILY_COST_THRESHOLD)
+
         report = generate_text_report(
             time_period,
             start,
@@ -358,11 +339,12 @@ def lambda_handler(event, context):
             compare_response,
             cost_threshold,
         )
+
         if current_costs > cost_threshold:
             print("Cost threshold exceeded. Sending notification.")
             send_sns(
                 report,
-                f"AWS Cost Report - {time_period.capitalize()} (Period: {start.isoformat()} to {end.isoformat()})",
+                f"AWS Cost Report - {time_period.capitalize()} (Period: {start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')})",
             )
             if os.environ.get("ENABLE_SLACK") == "true":
                 slack_report = generate_slack_block_report(
@@ -381,7 +363,9 @@ def lambda_handler(event, context):
             print(
                 f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
             )
+
         return {"statusCode": 200, "body": "Cost report generated successfully."}
+
     except ClientError as exc:
         message = f"An error occurred with the Cost Explorer API: {str(exc)}"
     except ValueError as exc:
@@ -389,4 +373,5 @@ def lambda_handler(event, context):
     except Exception as exc:
         message = f"An unexpected error occurred: {str(exc)}"
         print(f"Full error details: {exc}")
+
     return {"statusCode": 500, "body": message}
