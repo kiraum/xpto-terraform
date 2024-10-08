@@ -8,7 +8,7 @@ resource "aws_route53_zone" "zones" {
 # Create KMS keys for DNSSEC
 resource "aws_kms_key" "dnssec_key" {
   provider                 = aws.us_east_1
-  for_each                 = var.domains
+  for_each                 = { for k, v in var.domains : k => v if v.enable_dnssec }
   customer_master_key_spec = "ECC_NIST_P256"
   deletion_window_in_days  = 7
   key_usage                = "SIGN_VERIFY"
@@ -44,7 +44,7 @@ resource "aws_kms_key" "dnssec_key" {
 
 # Create Route53 key signing keys
 resource "aws_route53_key_signing_key" "key_signing_key" {
-  for_each                   = var.domains
+  for_each                   = { for k, v in var.domains : k => v if v.enable_dnssec }
   hosted_zone_id             = aws_route53_zone.zones[each.key].id
   key_management_service_arn = aws_kms_key.dnssec_key[each.key].arn
   name                       = "${each.value.domain_name}-key"
@@ -52,7 +52,7 @@ resource "aws_route53_key_signing_key" "key_signing_key" {
 
 # Enable DNSSEC for hosted zones
 resource "aws_route53_hosted_zone_dnssec" "dnssec" {
-  for_each = var.domains
+  for_each = { for k, v in var.domains : k => v if v.enable_dnssec }
   depends_on = [
     aws_route53_key_signing_key.key_signing_key
   ]

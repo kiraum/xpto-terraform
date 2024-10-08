@@ -65,8 +65,9 @@ module "route53" {
 
   domains = {
     "kiraum_it" = {
-      domain_name = "kiraum.it"
-      comment     = "kiraum.it hosted zone"
+      domain_name   = "kiraum.it"
+      comment       = "kiraum.it hosted zone"
+      enable_dnssec = true
       records = [
         # A record for root domain
         {
@@ -107,6 +108,12 @@ module "route53" {
             zone_id                = "Z2FDTNDATAQYW2"
             evaluate_target_health = false
           }
+        },
+        {
+          name    = "www"
+          type    = "DS"
+          ttl     = 300
+          records = ["59271 13 2 8FDD803780E68CC89617D1FE69E50E0D26E3A65B2ECE3434AF433D0611C04FB9"]
         },
         # TLSA record
         {
@@ -162,8 +169,9 @@ module "route53" {
       ]
     },
     "xpto_it" = {
-      domain_name = "xpto.it"
-      comment     = "xpto.it hosted zone"
+      domain_name   = "xpto.it"
+      comment       = "xpto.it hosted zone"
+      enable_dnssec = true
       records = [
         # A record for root domain
         {
@@ -226,7 +234,7 @@ module "route53" {
           ttl  = 300
           records = [
             # xpto.it
-            "protonmail-verification=cc3c2c9aebe9de240703d0be5df8c25c2adc5460",
+            "protonmail-verification=afef88a17d1a02a65dbb087c7f748fe9bcd01a32",
             "v=spf1 include:_spf.protonmail.ch ~all"
           ]
         },

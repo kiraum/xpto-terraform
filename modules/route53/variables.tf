@@ -1,7 +1,8 @@
 variable "domains" {
   type = map(object({
-    domain_name = string
-    comment     = string
+    domain_name   = string
+    comment       = string
+    enable_dnssec = bool
     records = list(object({
       name    = string
       type    = string

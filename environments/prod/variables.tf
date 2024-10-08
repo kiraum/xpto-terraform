@@ -27,3 +27,8 @@ variable "slack_webhook_url" {
   type        = string
   default     = ""
 }
+
+output "ds_records" {
+  value       = module.route53.ds_records
+  description = "The DS records for DNSSEC-enabled domains"
+}
