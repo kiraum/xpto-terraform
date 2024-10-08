@@ -121,7 +121,7 @@ module "route53" {
           name    = "_443._tcp"
           type    = "TXT"
           ttl     = 300
-          records = ["3 1 1 ${local.tlsa_hash_kiraum}"]
+          records = ["3 1 1 ${local.tlsa_hash_xpto_it}"]
         },
         # MX records for email routing
         {
