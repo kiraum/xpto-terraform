@@ -109,6 +109,7 @@ module "route53" {
             evaluate_target_health = false
           }
         },
+        # DS record
         {
           name    = "www"
           type    = "DS"
@@ -212,6 +213,13 @@ module "route53" {
             zone_id                = "Z2FDTNDATAQYW2"
             evaluate_target_health = false
           }
+        },
+        # DS record
+        {
+          name    = "www"
+          type    = "DS"
+          ttl     = 300
+          records = ["4612 13 2 344E99D76D844AFA04ACCEF9DB12F6C13FDD8C878BB97D77EB1B526423A20968"]
         },
         # TLSA record
         {
