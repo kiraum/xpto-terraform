@@ -214,12 +214,12 @@ module "route53" {
           }
         },
         # TLSA record
-        #{
-        #  name    = "_443._tcp"
-        #  type    = "TXT"
-        #  ttl     = 300
-        #  records = ["3 1 1 ${local.tlsa_hash_xpto_it}"]
-        #},
+        {
+          name    = "_443._tcp"
+          type    = "TXT"
+          ttl     = 300
+          records = ["3 1 1 ${local.tlsa_hash_xpto_it}"]
+        },
         # MX records for email routing
         {
           name    = ""
@@ -250,19 +250,19 @@ module "route53" {
           name    = "protonmail._domainkey"
           type    = "CNAME"
           ttl     = 300
-          records = ["protonmail.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+          records = ["protonmail.domainkey.d5cgr4quagzmaa5rqmmtnppt6lo46zuzu2zjylpuruv5luk4vmkuq.domains.proton.ch."]
         },
         {
           name    = "protonmail2._domainkey"
           type    = "CNAME"
           ttl     = 300
-          records = ["protonmail2.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+          records = ["protonmail2.domainkey.d5cgr4quagzmaa5rqmmtnppt6lo46zuzu2zjylpuruv5luk4vmkuq.domains.proton.ch."]
         },
         {
           name    = "protonmail3._domainkey"
           type    = "CNAME"
           ttl     = 300
-          records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+          records = ["protonmail3.domainkey.d5cgr4quagzmaa5rqmmtnppt6lo46zuzu2zjylpuruv5luk4vmkuq.domains.proton.ch."]
         }
       ]
     }
@@ -279,9 +279,9 @@ module "route53" {
 module "static_website" {
   source = "../../modules/static_website"
 
-  bucket_name  = "xpto-static-website-bucket"
-  domain_names = ["kiraum.it"]
-  # domain_names           = ["kiraum.it", "xpto.it"]
+  bucket_name = "xpto-static-website-bucket"
+  # domain_names = ["kiraum.it"]
+  domain_names           = ["xpto.it", "kiraum.it"]
   cloudfront_price_class = "PriceClass_100"
 
   tags = {

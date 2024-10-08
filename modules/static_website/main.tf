@@ -61,30 +61,28 @@ resource "aws_s3_bucket_policy" "static_site" {
   policy = data.aws_iam_policy_document.s3_policy.json
 }
 
-# Create an SSL certificate for each domain
+# Create an SSL certificate
 resource "aws_acm_certificate" "cert" {
-  for_each = toset(var.domain_names)
-
   provider                  = aws.us_east_1
-  domain_name               = each.value
-  subject_alternative_names = ["*.${each.value}"]
+  domain_name               = var.domain_names[0]
+  subject_alternative_names = concat(slice(var.domain_names, 1, length(var.domain_names)), [for domain in var.domain_names : "*.${domain}"])
   validation_method         = "DNS"
-
-  tags = var.tags
+  tags                      = var.tags
 
   lifecycle {
     create_before_destroy = true
   }
 }
 
+
 # Set up DNS records for certificate validation
 resource "aws_route53_record" "cert_validation" {
   for_each = {
-    for domain in var.domain_names : domain => {
-      name    = tolist(aws_acm_certificate.cert[domain].domain_validation_options)[0].resource_record_name
-      record  = tolist(aws_acm_certificate.cert[domain].domain_validation_options)[0].resource_record_value
-      type    = tolist(aws_acm_certificate.cert[domain].domain_validation_options)[0].resource_record_type
-      zone_id = data.aws_route53_zone.base_domain[domain].zone_id
+    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+      domain = regex("^\\*?\\.?([^*]+)$", dvo.domain_name)[0]
     }
   }
 
@@ -93,17 +91,16 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = each.value.zone_id
+  zone_id         = data.aws_route53_zone.base_domain[each.value.domain].zone_id
 }
+
 
 
 # Validate the SSL certificates
 resource "aws_acm_certificate_validation" "cert" {
-  for_each = aws_acm_certificate.cert
-
   provider                = aws.us_east_1
-  certificate_arn         = each.value.arn
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn if record.name == tolist(each.value.domain_validation_options)[0].resource_record_name]
+  certificate_arn         = aws_acm_certificate.cert.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
 
@@ -126,7 +123,7 @@ resource "aws_cloudfront_distribution" "static_site" {
   is_ipv6_enabled     = true
   http_version        = "http2and3"
   default_root_object = "index.html"
-  aliases             = flatten([for domain in var.domain_names : [domain, "*.${domain}"]])
+  aliases             = concat(var.domain_names, [for domain in var.domain_names : "*.${domain}"])
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -184,7 +181,7 @@ resource "aws_cloudfront_distribution" "static_site" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.cert[var.domain_names[0]].arn
+    acm_certificate_arn      = aws_acm_certificate.cert.arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }

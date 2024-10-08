@@ -13,7 +13,10 @@ output "cloudfront_distribution_id" {
   value       = aws_cloudfront_distribution.static_site.id
 }
 
-output "acm_certificate_arns" {
-  description = "The ARNs of the ACM certificates"
-  value       = { for domain, cert in aws_acm_certificate.cert : domain => cert.arn }
+output "acm_certificate_info" {
+  description = "Information about the ACM certificate"
+  value = {
+    domain_name = aws_acm_certificate.cert.domain_name
+    arn         = aws_acm_certificate.cert.arn
+  }
 }
