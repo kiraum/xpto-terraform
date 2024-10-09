@@ -18,10 +18,8 @@ YEARLY_COST_THRESHOLD = float(os.environ.get("YEARLY_COST_THRESHOLD", "48.00"))
 def get_ssm_parameter(parameter_name):
     """
     Retrieve a parameter value from AWS Systems Manager Parameter Store.
-
     Args:
         parameter_name (str): The name of the parameter to retrieve.
-
     Returns:
         str: The decrypted value of the parameter.
     """
@@ -120,12 +118,15 @@ def generate_text_report(
     response,
     compare_response,
     cost_threshold,
+    aws_account,
 ):
     """
     Generate a detailed text cost report.
     """
     text_template = """
-- AWS Cost Report for {time_period} (Period: {start_date} to {end_date})
+- AWS Cost Report - {time_period} (Period: {start_date} to {end_date})
+
+AWS Account: {aws_account}
 Threshold: {threshold:.7f} {unit}
 
 - Summary:
@@ -162,6 +163,7 @@ Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {
         difference=current_costs - compare_costs,
         threshold=cost_threshold,
         service_breakdown=service_breakdown,
+        aws_account=aws_account,
     )
 
 
@@ -175,6 +177,7 @@ def generate_slack_block_report(
     response,
     compare_response,
     cost_threshold,
+    aws_account,
 ):
     """
     Generate a Slack block-formatted cost report.
@@ -183,7 +186,7 @@ def generate_slack_block_report(
         "type": "header",
         "text": {
             "type": "plain_text",
-            "text": f"AWS Cost Report for {time_period.capitalize()}",
+            "text": f"AWS Cost Report - {time_period.capitalize()}",
             "emoji": True,
         },
     }
@@ -195,7 +198,12 @@ def generate_slack_block_report(
                 "type": "plain_text",
                 "text": f"Period: {start.isoformat()} to {end.isoformat()}",
                 "emoji": True,
-            }
+            },
+            {
+                "type": "plain_text",
+                "text": f"AWS Account: {aws_account}",
+                "emoji": True,
+            },
         ],
     }
 
@@ -286,10 +294,12 @@ def lambda_handler(event, context):
     AWS Lambda function to report AWS costs for various time periods.
     """
     ce = boto3.client("ce")
+    sts = boto3.client("sts")
     time_period = event.get("time_period", "daily").lower()
     current_date = datetime.datetime.utcnow().date()
 
     try:
+        aws_account = sts.get_caller_identity()["Account"]
         start, end, compare_start, compare_end = calculate_time_periods(
             time_period, current_date
         )
@@ -338,6 +348,7 @@ def lambda_handler(event, context):
             response,
             compare_response,
             cost_threshold,
+            aws_account,
         )
 
         if current_costs > cost_threshold:
@@ -357,6 +368,7 @@ def lambda_handler(event, context):
                     response,
                     compare_response,
                     cost_threshold,
+                    aws_account,
                 )
                 send_slack_notification(slack_report["blocks"])
         else:
