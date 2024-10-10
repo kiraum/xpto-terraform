@@ -125,12 +125,11 @@ def generate_text_report(
     """
     text_template = """
 - AWS Cost Report - {time_period} (Period: {start_date} to {end_date})
-
 AWS Account: {aws_account}
-Threshold: {threshold:.7f} {unit}
+Threshold: {threshold:.2f} {unit}
 
 - Summary:
-Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {compare_costs:.7f} {unit} | Difference: {difference:.7f} {unit}
+Current {time_period} cost: {current_costs:.2f} | Previous {time_period} cost: {compare_costs:.2f} {unit} | Difference: {difference:.2f} {unit}
 
 - Breakdown by Service:
 {service_breakdown}
@@ -141,6 +140,7 @@ Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {
         for result in response["ResultsByTime"]
         for group in result.get("Groups", [])
     }
+
     previous_services = {
         group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
         for result in compare_response["ResultsByTime"]
@@ -148,10 +148,13 @@ Current {time_period} cost: {current_costs:.7f} | Previous {time_period} cost: {
     }
 
     service_breakdown = ""
-    for service, cost in sorted(current_services.items()):
-        previous_cost = previous_services.get(service, 0)
-        difference = cost - previous_cost
-        service_breakdown += f"{service}\nCurrent: {cost:.7f} {unit} || Previous: {previous_cost:.7f} {unit} || Difference: {difference:.7f} {unit}\n\n"
+    for service, cost in sorted(
+        current_services.items(), key=lambda x: x[1], reverse=True
+    ):
+        if cost >= 0.01:
+            previous_cost = previous_services.get(service, 0)
+            difference = cost - previous_cost
+            service_breakdown += f"{service}\nCurrent: {cost:.2f} {unit} || Previous: {previous_cost:.2f} {unit} || Difference: {difference:.2f} {unit}\n\n"
 
     return text_template.format(
         time_period=time_period,
@@ -190,7 +193,6 @@ def generate_slack_block_report(
             "emoji": True,
         },
     }
-
     context = {
         "type": "context",
         "elements": [
@@ -206,29 +208,27 @@ def generate_slack_block_report(
             },
         ],
     }
-
     summary = {
         "type": "section",
         "fields": [
             {
                 "type": "mrkdwn",
-                "text": f"*Current {time_period} cost:*\n{current_costs:.7f} {unit}",
+                "text": f"*Current {time_period} cost:*\n{current_costs:.2f} {unit}",
             },
             {
                 "type": "mrkdwn",
-                "text": f"*Previous {time_period} cost:*\n{compare_costs:.7f} {unit}",
+                "text": f"*Previous {time_period} cost:*\n{compare_costs:.2f} {unit}",
             },
             {
                 "type": "mrkdwn",
-                "text": f"*Difference:*\n{current_costs - compare_costs:.7f} {unit}",
+                "text": f"*Difference:*\n{current_costs - compare_costs:.2f} {unit}",
             },
-            {"type": "mrkdwn", "text": f"*Threshold:*\n{cost_threshold:.7f} {unit}"},
+            {"type": "mrkdwn", "text": f"*Threshold:*\n{cost_threshold:.2f} {unit}"},
         ],
     }
-
     divider = {"type": "divider"}
-
     service_breakdown = []
+
     current_services = {
         group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
         for result in response["ResultsByTime"]
@@ -240,8 +240,10 @@ def generate_slack_block_report(
         for group in result.get("Groups", [])
     }
 
-    for service, cost in current_services.items():
-        if cost > 0:
+    for service, cost in sorted(
+        current_services.items(), key=lambda x: x[1], reverse=True
+    ):
+        if cost >= 0.01:
             previous_cost = previous_services.get(service, 0)
             difference = cost - previous_cost
             service_breakdown.append(
@@ -249,7 +251,7 @@ def generate_slack_block_report(
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*{service}*\nCurrent: {cost:.7f} {unit} | Previous: {previous_cost:.7f} {unit} | Difference: {difference:.7f} {unit}",
+                        "text": f"*{service}*\nCurrent: {cost:.2f} {unit} | Previous: {previous_cost:.2f} {unit} | Difference: {difference:.2f} {unit}",
                     },
                 }
             )
@@ -373,7 +375,7 @@ def lambda_handler(event, context):
                 send_slack_notification(slack_report["blocks"])
         else:
             print(
-                f"Total cost ({current_costs:.7f} {unit}) did not exceed the threshold ({cost_threshold:.7f} {unit}). No notification sent."
+                f"Total cost ({current_costs:.2f} {unit}) did not exceed the threshold ({cost_threshold:.2f} {unit}). No notification sent."
             )
 
         return {"statusCode": 200, "body": "Cost report generated successfully."}
