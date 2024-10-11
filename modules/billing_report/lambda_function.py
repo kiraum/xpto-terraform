@@ -39,9 +39,7 @@ def send_slack_notification(message):
     )
     with urllib.request.urlopen(req) as response:
         if response.getcode() != 200:
-            print(
-                f"Failed to send Slack notification. Status code: {response.getcode()}"
-            )
+            print(f"Failed to send Slack notification. Status code: {response.getcode()}")
 
 
 def calculate_time_periods(time_period, current_date):
@@ -65,9 +63,9 @@ def calculate_time_periods(time_period, current_date):
     elif time_period == "yearly":
         start = end.replace(month=1, day=1)
         compare_start = start.replace(year=start.year - 1)
-        compare_end = compare_start.replace(
-            year=compare_start.year + 1
-        ) - datetime.timedelta(days=1)
+        compare_end = compare_start.replace(year=compare_start.year + 1) - datetime.timedelta(
+            days=1
+        )
     else:
         raise ValueError(
             f"Invalid time period: {time_period}. Must be daily, weekly, monthly, or yearly."
@@ -83,20 +81,29 @@ def process_cost_data(response, compare_response):
         response (dict): The response from AWS Cost Explorer for the current period.
         compare_response (dict): The response from AWS Cost Explorer for the comparison period.
     Returns:
-        tuple: current_costs, compare_costs, unit. Returns (None, None, None) if no data is available.
+        tuple: current_costs, compare_costs, unit, current_services, compare_services.
     """
     if not response["ResultsByTime"] or not compare_response["ResultsByTime"]:
-        return None, None, None
-    current_costs = sum(
-        float(group["Metrics"]["UnblendedCost"]["Amount"])
-        for result in response["ResultsByTime"]
-        for group in result.get("Groups", [])
-    )
-    compare_costs = sum(
-        float(group["Metrics"]["UnblendedCost"]["Amount"])
-        for result in compare_response["ResultsByTime"]
-        for group in result.get("Groups", [])
-    )
+        return None, None, None, None, None
+
+    current_services = {}
+    compare_services = {}
+
+    for result in response["ResultsByTime"]:
+        for group in result.get("Groups", []):
+            service = group["Keys"][0]
+            amount = float(group["Metrics"]["UnblendedCost"]["Amount"])
+            current_services[service] = current_services.get(service, 0) + amount
+
+    for result in compare_response["ResultsByTime"]:
+        for group in result.get("Groups", []):
+            service = group["Keys"][0]
+            amount = float(group["Metrics"]["UnblendedCost"]["Amount"])
+            compare_services[service] = compare_services.get(service, 0) + amount
+
+    current_costs = sum(current_services.values())
+    compare_costs = sum(compare_services.values())
+
     unit = next(
         (
             result["Groups"][0]["Metrics"]["UnblendedCost"]["Unit"]
@@ -105,7 +112,8 @@ def process_cost_data(response, compare_response):
         ),
         "USD",
     )
-    return current_costs, compare_costs, unit
+
+    return current_costs, compare_costs, unit, current_services, compare_services
 
 
 def generate_text_report(
@@ -115,8 +123,8 @@ def generate_text_report(
     current_costs,
     compare_costs,
     unit,
-    response,
-    compare_response,
+    current_services,
+    compare_services,
     cost_threshold,
     aws_account,
 ):
@@ -135,24 +143,10 @@ Current {time_period} cost: {current_costs:.2f} | Previous {time_period} cost: {
 {service_breakdown}
     """
 
-    current_services = {
-        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
-        for result in response["ResultsByTime"]
-        for group in result.get("Groups", [])
-    }
-
-    previous_services = {
-        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
-        for result in compare_response["ResultsByTime"]
-        for group in result.get("Groups", [])
-    }
-
     service_breakdown = ""
-    for service, cost in sorted(
-        current_services.items(), key=lambda x: x[1], reverse=True
-    ):
+    for service, cost in sorted(current_services.items(), key=lambda x: x[1], reverse=True):
         if cost >= 0.01:
-            previous_cost = previous_services.get(service, 0)
+            previous_cost = compare_services.get(service, 0)
             difference = cost - previous_cost
             service_breakdown += f"{service}\nCurrent: {cost:.2f} {unit} || Previous: {previous_cost:.2f} {unit} || Difference: {difference:.2f} {unit}\n\n"
 
@@ -177,8 +171,8 @@ def generate_slack_block_report(
     current_costs,
     compare_costs,
     unit,
-    response,
-    compare_response,
+    current_services,
+    compare_services,
     cost_threshold,
     aws_account,
 ):
@@ -229,22 +223,9 @@ def generate_slack_block_report(
     divider = {"type": "divider"}
     service_breakdown = []
 
-    current_services = {
-        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
-        for result in response["ResultsByTime"]
-        for group in result.get("Groups", [])
-    }
-    previous_services = {
-        group["Keys"][0]: float(group["Metrics"]["UnblendedCost"]["Amount"])
-        for result in compare_response["ResultsByTime"]
-        for group in result.get("Groups", [])
-    }
-
-    for service, cost in sorted(
-        current_services.items(), key=lambda x: x[1], reverse=True
-    ):
+    for service, cost in sorted(current_services.items(), key=lambda x: x[1], reverse=True):
         if cost >= 0.01:
-            previous_cost = previous_services.get(service, 0)
+            previous_cost = compare_services.get(service, 0)
             difference = cost - previous_cost
             service_breakdown.append(
                 {
@@ -302,9 +283,7 @@ def lambda_handler(event, context):
 
     try:
         aws_account = sts.get_caller_identity()["Account"]
-        start, end, compare_start, compare_end = calculate_time_periods(
-            time_period, current_date
-        )
+        start, end, compare_start, compare_end = calculate_time_periods(time_period, current_date)
 
         response = ce.get_cost_and_usage(
             TimePeriod={
@@ -325,7 +304,7 @@ def lambda_handler(event, context):
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
 
-        current_costs, compare_costs, unit = process_cost_data(
+        current_costs, compare_costs, unit, current_services, compare_services = process_cost_data(
             response, compare_response
         )
 
@@ -347,8 +326,8 @@ def lambda_handler(event, context):
             current_costs,
             compare_costs,
             unit,
-            response,
-            compare_response,
+            current_services,
+            compare_services,
             cost_threshold,
             aws_account,
         )
@@ -367,8 +346,8 @@ def lambda_handler(event, context):
                     current_costs,
                     compare_costs,
                     unit,
-                    response,
-                    compare_response,
+                    current_services,
+                    compare_services,
                     cost_threshold,
                     aws_account,
                 )
