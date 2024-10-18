@@ -1,0 +1,987 @@
+{
+    "$schema": "https://raw.githubusercontent.com/alexpovel/ancv/v1.2.0/schema.json",
+    "basics": {
+        "name": "Tiago Felipe Gonçalves",
+        "label": "Development | Infra | Network | Security",
+        "image": "https://media.licdn.com/dms/image/v2/D5603AQEzjhoU5Y9Ang/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1726734171977?e=1735171200&v=beta&t=1xu9D4Tv81-b2dlyuVD-pov_stVTznTbVUSH_Y5vz9U",
+        "email": "tfgoncalves@xpto.it",
+        "phone": "Not disclosed",
+        "url": "https://www.xpto.it",
+        "summary": "Experienced network engineer and SRE with a strong background in infrastructure, development, and security. Proficient in multiple networking technologies and cloud platforms.",
+        "location": {
+            "address": "Not disclosed",
+            "postalCode": "Not disclosed",
+            "city": "Purmerend",
+            "countryCode": "NL",
+            "region": "North Holland"
+        },
+        "profiles": [
+            {
+                "network": "💼 LinkedIn",
+                "username": "tfgoncalves",
+                "url": "https://linkedin.com/in/tfgoncalves"
+            }
+        ]
+    },
+    "work": [
+        {
+            "name": "Booking.com",
+            "location": "Amsterdam, The Netherlands",
+            "description": "Edge and Core Network, Global Traffic Distribution",
+            "position": "Senior Network Engineer && SRE",
+            "url": "https://booking.com",
+            "startDate": "2022-05-01",
+            "summary": "Senior Network Engineer for Edge and Core Network, and Site Reliability Engineer for Global Traffic Distribution at Booking.com."
+        },
+        {
+            "name": "NIC.br (IX.br)",
+            "location": "Remote",
+            "description": "BGP Route Servers architecture, design, and development",
+            "position": "Senior Network Development Engineer",
+            "url": "https://nic.br",
+            "startDate": "2020-05-01",
+            "summary": "Senior Network Development Engineer on the biggest IXP around the world, responsible for the BGP Route Servers architecture, design, and development."
+        },
+        {
+            "name": "AMS-IX",
+            "location": "Amsterdam, The Netherlands",
+            "description": "2nd biggest IXP around the world",
+            "position": "Senior Network Engineer",
+            "url": "https://ams-ix.net",
+            "startDate": "2021-01-01",
+            "endDate": "2022-04-30",
+            "summary": "Senior Network Engineer on 2nd biggest IXP around the world."
+        },
+        {
+            "name": "Booking.com",
+            "location": "Amsterdam, The Netherlands",
+            "description": "Edge and Core Network",
+            "position": "Network Engineer",
+            "url": "https://booking.com",
+            "startDate": "2020-03-01",
+            "endDate": "2020-12-31",
+            "summary": "Network Engineer, Edge and Core Network at Booking.com."
+        },
+        {
+            "name": "AMS-IX",
+            "location": "Amsterdam, The Netherlands",
+            "description": "2nd biggest IXP around the world",
+            "position": "Network Engineer",
+            "url": "https://ams-ix.net",
+            "startDate": "2019-02-01",
+            "endDate": "2020-03-31",
+            "summary": "Network Engineer on the 2nd biggest IXP around the world."
+        },
+        {
+            "name": "NIC.br (IX.br)",
+            "location": "São Paulo/SP - Brazil",
+            "description": "3rd biggest IXP around the world",
+            "position": "Network and Systems Engineer",
+            "url": "https://nic.br",
+            "startDate": "2017-05-01",
+            "endDate": "2019-02-28",
+            "summary": "Network and System Engineer on the 3rd biggest IXP around the world."
+        },
+        {
+            "name": "British Telecom Global Services",
+            "location": "Hortolândia/SP - Brazil",
+            "description": "BT global MPLS network",
+            "position": "Senior Network Engineer",
+            "url": "https://www.bt.com/",
+            "startDate": "2016-11-01",
+            "endDate": "2017-05-31",
+            "summary": "Senior Network Engineer, acting on the BT global MPLS network."
+        },
+        {
+            "name": "Arteris S.A.",
+            "location": "São Paulo/SP - Brazil",
+            "description": "Infrastructure solutions for holding and sister companies",
+            "position": "Network Systems Engineer",
+            "url": "https://www.arteris.com.br/",
+            "startDate": "2015-11-01",
+            "endDate": "2016-11-30",
+            "summary": "Network Systems Engineer, designing, developing, and deploying solutions for the holding, and sister companies."
+        },
+        {
+            "name": "Talklink Informática Ltda",
+            "location": "Rio Claro/SP - Brazil",
+            "description": "ISP infrastructure, networks and security",
+            "position": "IT Infrastructure Manager",
+            "url": "https://www.talklink.com.br/",
+            "startDate": "2011-08-01",
+            "endDate": "2015-11-30",
+            "summary": "Manager and responsible for the infrastructure, networks and security of the ISP. Metropolitan wireless and optical network."
+        },
+        {
+            "name": "Shiguen Refrigeração Ltda",
+            "location": "Araras/SP - Brazil",
+            "description": "Network and system administration",
+            "position": "Network and System Administrator",
+            "startDate": "2010-07-01",
+            "endDate": "2011-09-30",
+            "summary": "Network and System Administrator, technical, and administrative responsible."
+        },
+        {
+            "name": "Multtech Informática Ltda",
+            "location": "Araras/SP - Brazil",
+            "description": "IT management",
+            "position": "IT Manager",
+            "startDate": "2009-09-01",
+            "endDate": "2010-07-31",
+            "summary": "IT manager."
+        },
+        {
+            "name": "Fundação Herminio Ometto",
+            "location": "Araras/SP - Brazil",
+            "description": "Support in southeastern Brazilian states",
+            "position": "Support Analyst",
+            "url": "https://www.fho.edu.br/",
+            "startDate": "2005-09-01",
+            "endDate": "2009-03-31",
+            "summary": "Support Analyst l1/l2 in southeastern Brazilian states."
+        },
+        {
+            "name": "X-Data Informática Ltda",
+            "location": "Araras/SP - Brazil",
+            "description": "IT management and support",
+            "position": "Support Analyst",
+            "startDate": "2001-10-01",
+            "endDate": "2005-02-28",
+            "summary": "IT manager and responsible for support l1/l2/l3."
+        }
+    ],
+    "education": [
+        {
+            "institution": "Metrocamp – DeVry",
+            "url": "https://www.devrybrasil.edu.br/",
+            "area": "Cisco Advanced Networks Management",
+            "studyType": "Post-graduate",
+            "startDate": "2016-01-01",
+            "endDate": "2017-12-31"
+        },
+        {
+            "institution": "Universidade Estadual de Campinas",
+            "url": "https://www.unicamp.br/",
+            "area": "Computer Networks",
+            "studyType": "Specialization",
+            "startDate": "2014-01-01",
+            "endDate": "2015-12-31"
+        },
+        {
+            "institution": "Centro Universitário Claretiano",
+            "url": "https://claretiano.edu.br/",
+            "area": "Computer Networks",
+            "studyType": "Graduate",
+            "startDate": "2011-01-01",
+            "endDate": "2013-12-31"
+        }
+    ],
+    "certificates": [
+        {
+            "name": "CCS Service Provider Core",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNP Enterprise",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/professional/ccnp-enterprise.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCS Enterprise Core",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCS Enterprise Advanced Infrastructure Implementation",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNP DevNet",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/professional/devnet-professional.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "Cisco Certified DevNet Specialist – DevOps",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/devnet/cisco-certified-devnet-specialist.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "Cisco Certified DevNet Specialist - Core",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/devnet/cisco-certified-devnet-specialist.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNA Routing and Switching",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/associate/ccna.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNA Security",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/associate/ccna-security.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNA Cyber Ops",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/associate/ccna-cyber-ops.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNA Service Provider",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/associate/ccna-service-provider.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "CCNA Wireless",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications/associate/ccna-wireless.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "NSTISSI-4011",
+            "issuer": "Cisco",
+            "date": "2023-01-01",
+            "url": "https://www.cisco.com/c/en/us/training-events/training-certifications/certifications.html",
+            "number": "CSCO12xxxx88"
+        },
+        {
+            "name": "JNCIP Service Provider",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/sp-routing-switching-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIS Service Provider",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/sp-routing-switching-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIS DevOps",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/devops",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCDS Service Provider",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/sp-routing-switching-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIA Junos",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/junos-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIA Cloud",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/cloud",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIA Design",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/design-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIA DevOps",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/devops",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIA Security",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/security-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "JNCIA MistAI",
+            "issuer": "Juniper",
+            "date": "2023-01-01",
+            "url": "https://www.juniper.net/us/en/training/certification/certification-tracks/mist-ai-track",
+            "number": "JPR00xxxx41"
+        },
+        {
+            "name": "BSD Specialist",
+            "issuer": "LPI",
+            "date": "2023-01-01",
+            "url": "https://www.lpi.org/our-certifications/bsd-overview",
+            "number": "LPI000xxxx20"
+        },
+        {
+            "name": "LPIC-3 Virtualization and Containerization",
+            "issuer": "LPI",
+            "date": "2023-01-01",
+            "url": "https://www.lpi.org/our-certifications/lpic-3-303-overview",
+            "number": "LPI000xxxx20"
+        },
+        {
+            "name": "LPIC-2",
+            "issuer": "LPI",
+            "date": "2023-01-01",
+            "url": "https://www.lpi.org/our-certifications/lpic-2-overview",
+            "number": "LPI000xxxx20"
+        },
+        {
+            "name": "LPIC-1",
+            "issuer": "LPI",
+            "date": "2023-01-01",
+            "url": "https://www.lpi.org/our-certifications/lpic-1-overview",
+            "number": "LPI000xxxx20"
+        },
+        {
+            "name": "AWS Certified Solutions Architect – Professional",
+            "issuer": "AWS",
+            "date": "2023-01-01",
+            "url": "https://aws.amazon.com/certification/certified-solutions-architect-professional/",
+            "number": "AWS02xxxx53"
+        },
+        {
+            "name": "AWS Certified DevOps Engineer - Professional",
+            "issuer": "AWS",
+            "date": "2023-01-01",
+            "url": "https://aws.amazon.com/certification/certified-devops-engineer-professional/",
+            "number": "AWS02xxxx53"
+        },
+        {
+            "name": "AWS Certified Advanced Networking – Specialty",
+            "issuer": "AWS",
+            "date": "2023-01-01",
+            "url": "https://aws.amazon.com/certification/certified-advanced-networking-specialty/",
+            "number": "AWS02xxxx53"
+        },
+        {
+            "name": "AWS Certified Cloud Practitioner",
+            "issuer": "AWS",
+            "date": "2023-01-01",
+            "url": "https://aws.amazon.com/certification/certified-cloud-practitioner/",
+            "number": "AWS02xxxx53"
+        },
+        {
+            "name": "PCNSE",
+            "issuer": "Palo Alto Networks",
+            "date": "2023-01-01",
+            "url": "https://www.paloaltonetworks.com/services/education/certification",
+            "number": "PAN00xxxx21"
+        },
+        {
+            "name": "RIPE NCC BGP Security Associate",
+            "issuer": "RIPE NCC",
+            "date": "2023-01-01",
+            "url": "https://www.ripe.net/support/training/courses/bgp",
+            "number": ""
+        },
+        {
+            "name": "RIPE NCC IPv6 Security Expert",
+            "issuer": "RIPE NCC",
+            "date": "2023-01-01",
+            "url": "https://www.ripe.net/support/training/courses/ipv6",
+            "number": ""
+        },
+        {
+            "name": "RIPE NCC Database Associate",
+            "issuer": "RIPE NCC",
+            "date": "2023-01-01",
+            "url": "https://www.ripe.net/support/training/courses/ripe-database",
+            "number": ""
+        },
+        {
+            "name": "RIPE NCC IPv6 Fundamentals Analyst",
+            "issuer": "RIPE NCC",
+            "date": "2023-01-01",
+            "url": "https://www.ripe.net/support/training/courses/ipv6",
+            "number": ""
+        },
+        {
+            "name": "EXIN DevOps Professional",
+            "issuer": "EXIN",
+            "date": "2023-01-01",
+            "url": "https://www.exin.com/certifications/exin-devops-professional-certification/",
+            "number": "EXN6xxxx41"
+        },
+        {
+            "name": "FCP – Optical Fibers",
+            "issuer": "Furukawa",
+            "date": "2023-01-01",
+            "url": "https://www.furukawalatam.com/en/training-and-certification",
+            "number": "FOxxxx/14"
+        }
+    ],
+    "awards": [
+        {
+            "title": "AMS-IX employee of the quarter",
+            "date": "2019-12-01",
+            "awarder": "AMS-IX",
+            "summary": "Recognized as the employee of the quarter for Q4, 2019 at AMS-IX."
+        },
+        {
+            "title": "Winner of Cyber War Games hackingday",
+            "date": "2012-06-01",
+            "awarder": "Cyber War Games - Coruja de TI",
+            "summary": "Winner of IT security challenge in the event Cyber War Games. The award was a PlayStation 3."
+        },
+        {
+            "title": "B.recognized",
+            "date": "2022-01-01",
+            "awarder": "Booking.com",
+            "summary": "Received B.recognized award 5 times at Booking.com from 2022 to present."
+        }
+    ],
+    "interests": [
+        {
+            "name": "Computers",
+            "keywords": [
+                "Technology",
+                "Programming",
+                "Hardware"
+            ]
+        },
+        {
+            "name": "Books",
+            "keywords": [
+                "Reading",
+                "Literature",
+                "Knowledge"
+            ]
+        },
+        {
+            "name": "Hiking",
+            "keywords": [
+                "Outdoors",
+                "Nature",
+                "Adventure"
+            ]
+        },
+        {
+            "name": "Travel",
+            "keywords": [
+                "Exploration",
+                "Culture",
+                "World"
+            ]
+        }
+    ],
+    "languages": [
+        {
+            "language": "Portuguese",
+            "fluency": "Native or bilingual proficiency"
+        },
+        {
+            "language": "English",
+            "fluency": "Professional working proficiency"
+        },
+        {
+            "language": "Italian",
+            "fluency": "Professional working proficiency"
+        },
+        {
+            "language": "Spanish",
+            "fluency": "Elementary proficiency"
+        },
+        {
+            "language": "Dutch",
+            "fluency": "Elementary proficiency"
+        }
+    ],
+    "projects": [
+        {
+            "name": "BGP Route Servers Automation and Scalability",
+            "description": "Developed an automated and scalable solution for BGP route servers at IX.br, the world's largest IXP in terms of ASNs and traffic volume.",
+            "highlights": [
+                "Implemented MLPA platform to avoid full-mesh topology",
+                "Designed for scalability, automation, and enhanced security",
+                "Optimized performance for handling large-scale BGP operations"
+            ],
+            "keywords": [
+                "BGP",
+                "Route Servers",
+                "IXP",
+                "Automation",
+                "Scalability"
+            ],
+            "startDate": "2017-05-01",
+            "url": "https://ix.br/"
+        },
+        {
+            "name": "IX.br Flow Analytics Platform",
+            "description": "Modernized IX.br's statistics generation system, handling 40Tbps of traffic data with improved visibility and clarity.",
+            "highlights": [
+                "Implemented flow collection, ingestion, enrichment, and storage",
+                "Developed containerized infrastructure using Docker and Docker Compose",
+                "Enhanced public statistical data generation and troubleshooting capabilities"
+            ],
+            "keywords": [
+                "Flow Analytics",
+                "Docker",
+                "Traffic Engineering",
+                "Data Visualization",
+                "Network Statistics"
+            ],
+            "startDate": "2023-04-01",
+            "url": "https://ix.br/"
+        }
+    ],
+    "publications": [
+        {
+            "name": "MANRS - Why?",
+            "publisher": "IX Forum 16 / MANRS",
+            "releaseDate": "2022-10-27",
+            "url": "https://www.youtube.com/watch?v=4qjxubKEIms",
+            "summary": "Presentation on MANRS, promoting this important project for a better and safer internet."
+        },
+        {
+            "name": "Mercado de Trabalho de redes",
+            "publisher": "NIC.br",
+            "releaseDate": "2022-02-16",
+            "url": "https://www.youtube.com/watch?v=kVoNagWmos0",
+            "summary": "Discussion on the evolving job market in Internet technology and networks, focusing on new opportunities and required skills for professionals in the field."
+        },
+        {
+            "name": "Blackhole, Large Communities e Novas Communities no IX.br",
+            "publisher": "NIC.br/IX.br - IX Forum 14",
+            "releaseDate": "2020-12-03",
+            "url": "https://www.youtube.com/watch?v=kuqRLm2ClVw",
+            "summary": "Presentation on the future and new functions of the Route Servers of the world's largest IXP."
+        },
+        {
+            "name": "Embracing Open: The AMS-IX Journey to Open Networking",
+            "publisher": "IX Fórum 13",
+            "releaseDate": "2019-12-01",
+            "url": "https://www.youtube.com/watch?v=xG78c4K57v4",
+            "summary": "Open Network AMS-IX use case for the management network using baremetal switches and Pluribus."
+        },
+        {
+            "name": "PPPoE Concentrator Dual-Stack!",
+            "publisher": "BSDMagazine",
+            "releaseDate": "2014-12-02",
+            "url": "https://archive.org/details/bsdmagazine/BSD_11_2014/",
+            "summary": "Article on PPPoE Concentrator Dual-Stack (v4/v6) based on open source software for small and midsize Internet Service Providers."
+        },
+        {
+            "name": "Concentrador PPPoE Dual-Stack!",
+            "publisher": "Grupo de Trabalho de Engenharia e Operação de Redes - NIC.br",
+            "releaseDate": "2014-11-27",
+            "url": "https://www.youtube.com/watch?v=_WaWKcsV9_Y",
+            "summary": "Presentation on PPPoE Concentrator Dual-Stack (v4/v6) based on open source software for small and midsize Internet Service Providers."
+        }
+    ],
+    "references": [
+        {
+            "name": "Miguel Regalado Querol",
+            "position": "Senior Systems Engineer",
+            "reference": "Tiago has been an excellent colleague. He is friendly and polite, very passionate about his work and always eager to learn and to help. He is an exceptional Network Engineer and has good developer and sysadmin skills. It's been a pleasure working with him."
+        },
+        {
+            "name": "Zhangzheng Zheng",
+            "position": "Network Engineer at AMS-IX",
+            "reference": "Tiago has both broad and in-depth knowledge on networking, Linux system administration and also automation. He is always dedicated to his customers and also his colleagues, is willing to share his experience and knowledge with the rest of the team. I have personally got a lot of assistance and inspiration from Tiago."
+        },
+        {
+            "name": "Garri Djavadyan",
+            "position": "Senior Network Engineer at AMS-IX",
+            "reference": "Tiago is an extremely talented network engineer who never stops learning. He has a great sense of humor that has helped a lot in stressful night maintenances. It is a great pleasure to discuss topics with him because of his open-mindedness: you can be sure that by the end of the discussion there is the best solution on the table. He is well-organized, and he never misses a smallest detail."
+        },
+        {
+            "name": "Leroy De Vos",
+            "position": "Network Engineer at AMS-IX",
+            "reference": "Tiago is a great colleague and has been a big help in my first year at AMS-IX. He is very knowledgeable in a wide arrange of skills and able to explain and demonstrate his knowledge in a clear and concise way. Always willing to go the extra mile and help a fellow colleague out, a true team player."
+        },
+        {
+            "name": "Felipe Agnelli Barbosa",
+            "position": "DNS Specialist || Senior Cloud|System|Network Infrastructure Engineer",
+            "reference": "I had contact with Tiago when he worked at IX.br, I could see that he is a dedicated and competent professional, with good knowledge of networks and operating systems."
+        },
+        {
+            "name": "Maxim Cherevko",
+            "position": "Network Architect/Pre-sales engineer at AMS-IX",
+            "reference": "Tiago is highly experienced network engineer and very good team player! His knowledge in different areas (networking, linux) helps him a lot in achieving his goals."
+        },
+        {
+            "name": "Drew Taylor",
+            "position": "Network Design Engineer at Google",
+            "reference": "Tiago is a highly knowledgeable, experienced network engineer who always goes the extra distance to get things done. During my time working with Tiago I was always amazed by his ability to find the root of a problem and come up with a solution that others hadn't considered."
+        },
+        {
+            "name": "Stamatis Maritsas",
+            "position": "Infrastructure Operations Engineer @ Sympower",
+            "reference": "A very experienced and exceptional engineer with endless knowledge in networking, but also a master in scripting and automation. Very easy-going and hard-working individual, always kind and polite, willing to help his colleagues no matter what. Responsible, methodical and organized engineer, who is always very eager to learn new technologies and improve himself, but also to share his knowledge with the rest of the team."
+        },
+        {
+            "name": "Nico Scheper",
+            "position": "Senior Business Developer at AMS-IX",
+            "reference": "Tiago is a well connected professional that always takes the time to support others. Always ready to put all his knowledge time and energy to get the job done. A great asset to teamwork."
+        },
+        {
+            "name": "Winston With",
+            "position": "Engineer at ams-ix",
+            "reference": "Tiago has been one of the hardest working guys i have ever had the pleasure to work with. He is always eager to learn more and to go the extra mile, no matter the jetlag, time or weather. His in depth knowledge of the network and the technique is admirable."
+        },
+        {
+            "name": "Katerina van der Kolk-Karagianni",
+            "position": "Knowledge Manager",
+            "reference": "Tiago has an unquenched thirst for knowledge. In spite of his extensive expertise and vast experience as a Network Engineer, he is constantly studying and looking for ways to keep upgrading. He is very responsible, meticulous and hard-working, a team player, and has a great energy."
+        },
+        {
+            "name": "Aris Lambrianidis",
+            "position": "Jack of all trades, master of some.",
+            "reference": "Tiago is the rare combination of a deeply knowledgeable engineer, responsible employee, and great fun to hang out with. Was a pleasure working with him, and I truly hope our professional paths will cross again."
+        },
+        {
+            "name": "Donny van Grieken",
+            "position": "Senior Datacenter Engineer | Datacenter Infrastructure",
+            "reference": "Tiago is proactive, result oriented, responsible and technically sound employee and he is always ready to put all his energy and time to get the job done. He has an exceptional troubleshooting and analytical skill in Network Engineering and is a great asset to any company."
+        },
+        {
+            "name": "Konstantinos Prantzos",
+            "position": "Manager Operations at AMS-IX",
+            "reference": "Tiago is an amazingly knowledgeable engineer, highly skilled, organised and methodical, with structured and logical thinking. He is very detailed, efficient and can deliver results in very tight deadlines while keeping the quality at the highest level. He is a real team player, always eager to help others, dive in and even take over any task required of him."
+        },
+        {
+            "name": "Maartje van Ooijen",
+            "position": "Teamlead Platform Engineering Procurement",
+            "reference": "Tiago is a passionate Network Engineer always willing to go the extra mile and then some. In the projects I have done with him I have always been able to rely on him 100% and have not been let down once. Also, very important, he is a nice and friendly colleague who's great to have around."
+        },
+        {
+            "name": "Tim Vriend",
+            "position": "Manager of Engineering at AMS-IX",
+            "reference": "Tiago, you are one of the most pleasant people I have worked with. Ultra knowledgeable, easy going and simply just a great guy."
+        },
+        {
+            "name": "Gloria García Dosil",
+            "position": "SW Engineer & Cofounder at degoma",
+            "reference": "I enjoyed very much my time working with Tiago. He is highly knowledgeable and, what sometimes is even more important, always eager to help with a smile, no matter the circumstance. Great addition to every team!"
+        },
+        {
+            "name": "Fabio Pessoa Nunes",
+            "position": "Network and Systems Supervisor | Senior Network Engineer at NIC.br / IX.br(PTT.br) IXP",
+            "reference": "Tiago has huge technical knowledge and is always updated with the market, being one of the most skilled network engineers that I know. He is the best guy to discuss about network/technology, and is always ready to receive new challenges and do his best to find out the best solution."
+        },
+        {
+            "name": "Norlando Silva",
+            "position": "IX.br / Analista de Infraestrutura de Redes - Revisor de Textos",
+            "reference": "Trabalhei com o Tiago no Nic.br. Certamente um dos profissionais mais dedicados e competentes com quem já trabalhei. Em tudo que faz, entrega-se 100%. Relacionamento interpessoal excelente."
+        },
+        {
+            "name": "Bruno Silva",
+            "position": "SysAdmin | LPIC-1",
+            "reference": "Nunca conheci alguém como o Tiago, tá sempre estudando, evoluindo, alguém que está debaixo de livros até mesmo durante seu almoço, acorda cedo para estudar e evoluir, está o tempo todo se aprimorando, é o melhor profissional que já conheci, tem um excelente conhecimento, um cérebro que vale ouro, mas acima de tudo, uma vontade de trabalhar que pouquíssimas pessoas tem hoje em dia."
+        },
+        {
+            "name": "Julio Sirota",
+            "position": "Gerente de Infraestrutura IX.br at NIC.br",
+            "reference": "Tiago is one of the most talented people I've ever worked with. His mastery of networking, Linux, Internet, routing, BGP among others is so natural that the work produced always impressed me. I hope you have the opportunity to continue developing and to achieve your personal goals."
+        },
+        {
+            "name": "Fabio Nokai",
+            "position": "SR Software Engineer no Mercado Livre",
+            "reference": "Tiago é uma pessoa que procura evoluir constantemente, sempre estudando e experimentando novas áreas/tecnologias. Apesar de não trabalhar na mesma equipe, tive várias interações com Tiago por ser do mesmo departamento e aprendi muito com ele em nossas conversas."
+        },
+        {
+            "name": "Erton Silva Filho",
+            "position": "Senior Network Engineer | Automation & Security Enthusiast | Linux & Python Expert | Infrastructure Specialist",
+            "reference": "Tiago is an exceptional professional, has a vast knowledge, especially in networks and UNIX systems, always willing to help everyone (I learned a lot with him) but extremely focused on his work, he has much to add in whatever job he is. No doubt working with him again would be great."
+        },
+        {
+            "name": "Danilo Santos",
+            "position": "Cloud Security Consultant at Amazon Web Services (AWS)",
+            "reference": "Tiago is very commited and high skilled. He can certainly add so much to the company he works to. Work with him was a great experience, and I had the opportunity to learn a lot with him."
+        },
+        {
+            "name": "Victor Nascimento",
+            "position": "CEO and Founder at Compcon",
+            "reference": "Tiago is an brilliant professional with really high technical skills. He has always been a resilient professional able to handle with so many different technologies and challenges. besides that, Tiago always takes advantages of his technical knowledge to inovate and create new business solutions."
+        },
+        {
+            "name": "Diogo Santos",
+            "position": "Network Datacenter Engineer | Passionate Technical Instructor",
+            "reference": "Tiago is always ready to help. He is not only a great scholar, but also a researcher. He loves to look for new technical challenges and he is not restricted to just one specialization area. Certainly working with Tiago is synonymous with learning for all."
+        },
+        {
+            "name": "Claudio P Costa (Indio)",
+            "position": "AWS Certified Cloud Practitioner, Google Cloud Associate Engineer Certified, Sysadmin Linux e Unix (FreeBSD), Cloud, Virtualização e Infraestrutura TI.",
+            "reference": "Profissional com amplo conhecimento em sistemas operacionais Unix (BSD e Linux) e redes. Bom relacionamento, com talento para documentar e apresentar palestras compartilhando seu conhecimento."
+        },
+        {
+            "name": "Danilo Torlai",
+            "position": "Senior SD-WAN Engineer at VMware",
+            "reference": "Tiago is very commited with the job, alway thinking foward and brilliant. He has great technical and soft skils. I had the opportunity to study and work with him, it was a good experience."
+        },
+        {
+            "name": "Augusto Dell'Acqua",
+            "position": "HR/ Training & Development/ Recruiting/ Staffing/ HR Business partner",
+            "reference": "Tiago combines a high level of technical skills, valuable interpersonal competencies, capacity to learn new and complex things really quickly and above all, the ability to translate all this into amazing customer service."
+        },
+        {
+            "name": "Alexandre Alvarenga",
+            "position": "Consultant - Learning and Development Expert at ING | Enterprise Cisco Certified Network Professional",
+            "reference": "Tiago is exceptional. Having him on the team has increased the quality bar of how we attend our customers. Tiago is extremely focused, committed and skilled. Beyond technical knowledge he knows how to work in team and contribute with very important inputs for the organization."
+        },
+        {
+            "name": "Clesio Guimarães Belizário Junior",
+            "position": "Technical Consulting Engineer - DNA Center",
+            "reference": "Tiago is a great co-worker, Very proactive, dedicated with his team mates and very studious. He has a great technical knowledge which he transfer to his co-workers collaborating with the development of the whole team."
+        },
+        {
+            "name": "Rafael Almeida",
+            "position": "Network Engineer | CCNP Enterprise | SD-WAN | WLAN",
+            "reference": "I've had the great opportunity to work with Tiago at BT for a short period of time, but still I was able to see he is a amazing guy to work with. He has great technical skills, very committed to his work/projects and excellent team work player. I am sure he will be an important​ asset wherever company he works for."
+        },
+        {
+            "name": "Pedro Fuziwara",
+            "position": "Palestrante e Terapeuta Quântico",
+            "reference": "Tiago is very committed with the work and customer. He is always present at critical cases and he is always ready to assist his coworkers."
+        },
+        {
+            "name": "Paulo Tourinho",
+            "position": "ITIL Ambassador / ITIL 4 Managing Professional / ITIL 4 Service Request Practice Reviewer",
+            "reference": "Tiago is by far one of the most capable and skilled engineer I have been worked, he has full knowledge of many different structures and applications and he is also capable to deal with several complex cases simultaneously. Adding to this Technical skill he is still a really good person and aggregate to the team´s relationship heavily daily, being always available to assist everyone. It is truly a pleasure to work with Tiago."
+        },
+        {
+            "name": "Edion Dias",
+            "position": "Network Tech Manager at New Era Tech",
+            "reference": "I had the opportunity to work with Tiago at BT and learn with him. He is a brilliant professional and has strong networking skills, he has so much to provide and to add to the company and his coworkers. Congrats, Tiago and keep up the good work!"
+        },
+        {
+            "name": "Fábio Vieira",
+            "position": "Product Owner CSPO | CTFL | CTFL-AT",
+            "reference": "O Tiago é um profissional dedicado e muito compromissado com os projetos em que trabalha. É uma pessoa de ótima convivência. Extremamente colaborativo e atualizado, me agregou muito conhecimento no tempo em que trabalhamos juntos."
+        },
+        {
+            "name": "Marcelo Mergulhão",
+            "position": "System Architect at Daitan Group",
+            "reference": "Tiago is certainly a guy that knows what he talks about. I had the opportunity to study and work with him during 2015 while we were at the Computer Network Specialization offered by Unicamp. During that time I found that he knows about Linux, network protocols, a lot of tools to analyze and improve the management of simple and complex environments. Tiago excels at learning new technologies fast and is always tuned about the state of the art of the computer networks area."
+        },
+        {
+            "name": "Guilherme Corenzan",
+            "position": "IT Manager | IT Infrastructure Analyst",
+            "reference": "Tiago é um excelente profissional, alto conhecimento técnico, autodidata, pró-ativo e colaborativo, agrega muito ao time e a empresa."
+        },
+        {
+            "name": "Guilherme Ferreira Rosário",
+            "position": "DevSecOps / DevOps / Arquitetura / SRE / Multi Cloud / Helm / Cloud Security / Kubernetes Security / Cibersegurança",
+            "reference": "Tiago é altamente profissional e sagaz em sua linha de raciocínio acerca das operações que estão sobre sua responsabilidade. Inspira confiança e transmite segurança nas tomadas de decisão."
+        },
+        {
+            "name": "Marcio Tormente",
+            "position": "Analista de Networking Sr.",
+            "reference": "Tiago is a excelent IT professional, alway thinking foward, dedicated and he have passion for tecnology. Definitely is kind of profession that any company want in their team."
+        },
+        {
+            "name": "Wendel Ferreira",
+            "position": "Infrastructure Analyst | SRE | DevOps | Financial",
+            "reference": "Sempre estudando e procurando extrair o máximo de conhecimento possível. O Tiago é um grande profissional, sempre empenhado em colaborar e expor sua opinião com bastante senioridade. Seus conhecimentos e sabedoria são os mais diversificado em várias de TI. Ótima disposição para trabalhar em equipe, sendo na liderança ou suporte, sempre com motivação e compartilhando conhecimentos."
+        },
+        {
+            "name": "Marcos Buzo",
+            "position": "Network (Engineer|Developer)",
+            "reference": "Tiago is a high skilled network engineer with a solid experience on ISP environments. He is able to plan, deploy and manage networks with devices from different vendors, a wide range of protocols and operating systems. He also has strong communication and relationship skills."
+        },
+        {
+            "name": "Arcílio Damiati",
+            "position": "Buscando sempre a melhoria contínua nos produtos e processos junto aos times",
+            "reference": "Tiago é grande profissional na área de Tecnologia. Um excelente profissional na área de redes e desenvolvimento de soluções em TI. Um excelente gestor, pois conta com uma relação lider-liderado muito saúdavel e uma capacidade muito grande de repassar seus conhecimentos e experiências."
+        }
+    ],
+    "skills": [
+        {
+            "name": "Network Engineering",
+            "level": "Expert",
+            "keywords": [
+                "Routing Protocols (BGP, OSPF, IS-IS)",
+                "MPLS",
+                "L2VPN/L3VPN/EVPN",
+                "Network Security",
+                "Network Automation",
+                "Traffic Engineering",
+                "Network Design",
+                "Troubleshooting"
+            ]
+        },
+        {
+            "name": "Network Equipment",
+            "level": "Expert",
+            "keywords": [
+                "Cisco",
+                "Juniper",
+                "Arista",
+                "Brocade/Extreme",
+                "Huawei",
+                "Palo Alto",
+                "F5",
+                "Accedian"
+            ]
+        },
+        {
+            "name": "Programming Languages",
+            "level": "Proficient",
+            "keywords": [
+                "Python",
+                "Shell Scripting",
+                "Perl",
+                "Rust",
+                "Golang",
+                "C (basic)"
+            ]
+        },
+        {
+            "name": "Cloud & Virtualization",
+            "level": "Proficient",
+            "keywords": [
+                "AWS",
+                "Azure",
+                "GCP",
+                "VMware",
+                "KVM",
+                "XEN",
+                "Docker",
+                "Kubernetes"
+            ]
+        },
+        {
+            "name": "Operating Systems",
+            "level": "Expert",
+            "keywords": [
+                "Linux",
+                "FreeBSD",
+                "OpenBSD",
+                "Windows Server"
+            ]
+        },
+        {
+            "name": "Network Protocols & Technologies",
+            "level": "Expert",
+            "keywords": [
+                "IPv4/IPv6",
+                "RPKI",
+                "IRR",
+                "VXLAN",
+                "QoS/CoS",
+                "802.1X",
+                "VPN",
+                "Firewalls"
+            ]
+        },
+        {
+            "name": "Monitoring & Analytics",
+            "level": "Proficient",
+            "keywords": [
+                "Zabbix",
+                "Grafana",
+                "Prometheus",
+                "ELK Stack",
+                "Netflow/sFlow",
+                "SNMP"
+            ]
+        },
+        {
+            "name": "DevOps & Automation",
+            "level": "Proficient",
+            "keywords": [
+                "Ansible",
+                "Terraform",
+                "CI/CD",
+                "Git",
+                "Jenkins",
+                "Docker",
+                "Kubernetes"
+            ]
+        },
+        {
+            "name": "Databases",
+            "level": "Proficient",
+            "keywords": [
+                "MySQL",
+                "PostgreSQL",
+                "MongoDB",
+                "Elasticsearch",
+                "InfluxDB"
+            ]
+        },
+        {
+            "name": "Project Management",
+            "level": "Knowledgeable",
+            "keywords": [
+                "ITIL",
+                "COBIT",
+                "PMBOK"
+            ]
+        }
+    ],
+    "volunteer": [
+        {
+            "organization": "Mutually Agreed Norms for Routing Security (MANRS)",
+            "position": "Ambassador",
+            "url": "https://www.manrs.org/",
+            "startDate": "2022-03-01",
+            "endDate": "2022-12-31",
+            "summary": "Served as a MANRS Ambassador, representing a MANRS participant organization and promoting routing security. Provided mentorship to MANRS Fellows, generated awareness in local and regional communities, contributed to the MANRS blog, and participated in capacity building activities.",
+            "highlights": [
+                "Supported MANRS Fellows through mentorship and guidance",
+                "Promoted MANRS through various channels including social media and events",
+                "Moderated online MANRS training courses",
+                "Contributed to building the MANRS community",
+                "Provided technical assistance to less experienced network operators"
+            ]
+        },
+        {
+            "organization": "PeeringDB",
+            "position": "Portuguese Translator",
+            "url": "https://www.peeringdb.com/",
+            "startDate": "2023-05-01",
+            "summary": "Serve as the Portuguese/English translation maintainer for PeeringDB, ensuring accurate and up-to-date translations of the platform's content.",
+            "highlights": [
+                "Maintain Portuguese translations for PeeringDB",
+                "Ensure consistency and accuracy in language translations",
+                "Contribute to making PeeringDB accessible to Portuguese-speaking users"
+            ]
+        }
+    ],
+    "meta": {
+        "version": "v1.0.0",
+        "canonical": "https://github.com/jsonresume/resume-schema/blob/v1.0.0/schema.json",
+        "ancv": {
+            "template": "Sequential",
+            "theme": "lollipop",
+            "ascii_only": false,
+            "language": "en",
+            "dec31_as_year": true
+        }
+    }
+}
