@@ -172,6 +172,34 @@ resource "aws_cloudfront_distribution" "static_site" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  ordered_cache_behavior {
+    path_pattern     = "/resume"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${var.bucket_name}"
+
+    forwarded_values {
+      query_string = false
+      headers      = ["Origin"]
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl                = 0
+    default_ttl            = 300
+    max_ttl                = 1200
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
+
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.url_rewrite.arn
+    }
+  }
+
   price_class = var.cloudfront_price_class
 
   restrictions {
@@ -410,4 +438,24 @@ resource "aws_cloudfront_response_headers_policy" "well_known_headers_policy" {
       value    = "text/plain"
     }
   }
+}
+
+# CloudFront function to rewrite /resume URLs to /resume/index.html
+resource "aws_cloudfront_function" "url_rewrite" {
+  name    = "url-rewrite"
+  runtime = "cloudfront-js-1.0"
+  comment = "URL rewrite for /resume"
+  publish = true
+  code    = <<EOF
+function handler(event) {
+    var request = event.request;
+    var uri = request.uri;
+
+    if (uri === '/resume' || uri === '/resume/') {
+        request.uri = '/resume/index.html';
+    }
+
+    return request;
+}
+EOF
 }

@@ -101,6 +101,14 @@ a:hover {
     padding-left: 1em;
     text-indent: -1em;
 }
+.links-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+.links-list li::before {
+    content: "=> ";
+    color: #32CD32;
+}
 
 @media (max-width: 768px) {
     body {
