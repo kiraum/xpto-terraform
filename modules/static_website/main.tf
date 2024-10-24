@@ -126,16 +126,14 @@ resource "aws_cloudfront_distribution" "static_site" {
   aliases             = concat(var.domain_names, [for domain in var.domain_names : "*.${domain}"])
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = "S3-${var.bucket_name}"
-
+    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
+    cached_methods             = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id           = "S3-${var.bucket_name}"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
 
     forwarded_values {
       query_string = false
       headers      = ["Origin"]
-
       cookies {
         forward = "none"
       }
@@ -149,17 +147,15 @@ resource "aws_cloudfront_distribution" "static_site" {
   }
 
   ordered_cache_behavior {
-    path_pattern     = "/.well-known/*"
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "S3-${var.bucket_name}"
-
+    path_pattern               = "/.well-known/*"
+    allowed_methods            = ["GET", "HEAD", "OPTIONS"]
+    cached_methods             = ["GET", "HEAD"]
+    target_origin_id           = "S3-${var.bucket_name}"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.well_known_headers_policy.id
 
     forwarded_values {
       query_string = false
       headers      = ["Origin", "Content-Type"]
-
       cookies {
         forward = "none"
       }
@@ -186,12 +182,11 @@ resource "aws_cloudfront_distribution" "static_site" {
       }
     }
 
-    min_ttl                = 0
-    default_ttl            = 300
-    max_ttl                = 1200
-    compress               = true
-    viewer_protocol_policy = "redirect-to-https"
-
+    min_ttl                    = 0
+    default_ttl                = 300
+    max_ttl                    = 1200
+    compress                   = true
+    viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
 
     function_association {
@@ -237,7 +232,7 @@ resource "aws_lambda_function" "disable_cloudfront" {
   handler          = "disable_cloudfront.lambda_handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   runtime          = "python3.12"
-  timeout          = 10
+  timeout          = 30
 
   environment {
     variables = {

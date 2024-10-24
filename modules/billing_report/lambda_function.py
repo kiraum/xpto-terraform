@@ -39,7 +39,9 @@ def send_slack_notification(message):
     )
     with urllib.request.urlopen(req) as response:
         if response.getcode() != 200:
-            print(f"Failed to send Slack notification. Status code: {response.getcode()}")
+            print(
+                f"Failed to send Slack notification. Status code: {response.getcode()}"
+            )
 
 
 def calculate_time_periods(time_period, current_date):
@@ -63,9 +65,9 @@ def calculate_time_periods(time_period, current_date):
     elif time_period == "yearly":
         start = end.replace(month=1, day=1)
         compare_start = start.replace(year=start.year - 1)
-        compare_end = compare_start.replace(year=compare_start.year + 1) - datetime.timedelta(
-            days=1
-        )
+        compare_end = compare_start.replace(
+            year=compare_start.year + 1
+        ) - datetime.timedelta(days=1)
     else:
         raise ValueError(
             f"Invalid time period: {time_period}. Must be daily, weekly, monthly, or yearly."
@@ -144,7 +146,9 @@ Current {time_period} cost: {current_costs:.2f} | Previous {time_period} cost: {
     """
 
     service_breakdown = ""
-    for service, cost in sorted(current_services.items(), key=lambda x: x[1], reverse=True):
+    for service, cost in sorted(
+        current_services.items(), key=lambda x: x[1], reverse=True
+    ):
         if cost >= 0.01:
             previous_cost = compare_services.get(service, 0)
             difference = cost - previous_cost
@@ -223,7 +227,9 @@ def generate_slack_block_report(
     divider = {"type": "divider"}
     service_breakdown = []
 
-    for service, cost in sorted(current_services.items(), key=lambda x: x[1], reverse=True):
+    for service, cost in sorted(
+        current_services.items(), key=lambda x: x[1], reverse=True
+    ):
         if cost >= 0.01:
             previous_cost = compare_services.get(service, 0)
             difference = cost - previous_cost
@@ -283,7 +289,9 @@ def lambda_handler(event, context):
 
     try:
         aws_account = sts.get_caller_identity()["Account"]
-        start, end, compare_start, compare_end = calculate_time_periods(time_period, current_date)
+        start, end, compare_start, compare_end = calculate_time_periods(
+            time_period, current_date
+        )
 
         response = ce.get_cost_and_usage(
             TimePeriod={
@@ -304,8 +312,8 @@ def lambda_handler(event, context):
             GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
         )
 
-        current_costs, compare_costs, unit, current_services, compare_services = process_cost_data(
-            response, compare_response
+        current_costs, compare_costs, unit, current_services, compare_services = (
+            process_cost_data(response, compare_response)
         )
 
         if current_costs is None:

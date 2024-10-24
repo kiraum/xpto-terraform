@@ -52,7 +52,7 @@ module "billing_report" {
   enable_email_notification = true
   enable_slack_notification = true
   slack_webhook_url         = var.slack_webhook_url
-  daily_cost_threshold      = "0.01"
+  daily_cost_threshold      = "0.15"
   weekly_cost_threshold     = "1.00"
   monthly_cost_threshold    = "5.00"
   yearly_cost_threshold     = "60.00"
@@ -166,7 +166,22 @@ module "route53" {
           type    = "CNAME"
           ttl     = 300
           records = ["protonmail3.domainkey.dempd74kuxcjabpnbahdxnyoscyzm34xj6e5of6vyqwjrw64bwqoq.domains.proton.ch."]
+        },
+        # lightsail
+        {
+          name    = "ansiv"
+          type    = "CNAME"
+          ttl     = 300
+          records = [module.lightsail_ansiv.container_url]
+        },
+        # lightsail cert
+        {
+          name    = module.lightsail_ansiv.domain_validation_records["ansiv.kiraum.it"].name
+          type    = module.lightsail_ansiv.domain_validation_records["ansiv.kiraum.it"].type
+          ttl     = 300
+          records = [module.lightsail_ansiv.domain_validation_records["ansiv.kiraum.it"].value]
         }
+
       ]
     },
     "xpto_it" = {
@@ -271,7 +286,22 @@ module "route53" {
           type    = "CNAME"
           ttl     = 300
           records = ["protonmail3.domainkey.d5cgr4quagzmaa5rqmmtnppt6lo46zuzu2zjylpuruv5luk4vmkuq.domains.proton.ch."]
+        },
+        # lightsail
+        {
+          name    = "ansiv"
+          type    = "CNAME"
+          ttl     = 300
+          records = [module.lightsail_ansiv.container_url]
+        },
+        # lightsail cert
+        {
+          name    = module.lightsail_ansiv.domain_validation_records["ansiv.xpto.it"].name
+          type    = module.lightsail_ansiv.domain_validation_records["ansiv.xpto.it"].type
+          ttl     = 300
+          records = [module.lightsail_ansiv.domain_validation_records["ansiv.xpto.it"].value]
         }
+
       ]
     }
   }
@@ -287,8 +317,7 @@ module "route53" {
 module "static_website" {
   source = "../../modules/static_website"
 
-  bucket_name = "xpto-static-website-bucket"
-  # domain_names = ["kiraum.it"]
+  bucket_name            = "xpto-static-website-bucket"
   domain_names           = ["xpto.it", "kiraum.it"]
   cloudfront_price_class = "PriceClass_100"
 
@@ -302,4 +331,17 @@ module "static_website" {
     aws           = aws
     aws.us_east_1 = aws.us_east_1
   }
+}
+
+
+# Lightsail module
+module "lightsail_ansiv" {
+  source = "../../modules/lightsail_ansiv"
+
+  container_name       = "ansiv"
+  container_image      = ":ansiv.resume.7"
+  availability_zone    = "${var.aws_region}a"
+  bundle_id            = "nano"
+  custom_domain_name   = ["ansiv.xpto.it", "ansiv.kiraum.it"]
+  monthly_budget_limit = "10"
 }
