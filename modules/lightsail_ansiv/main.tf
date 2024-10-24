@@ -152,11 +152,16 @@ resource "aws_budgets_budget" "lightsail" {
   limit_unit   = "USD"
   time_unit    = "MONTHLY"
 
+  cost_filter {
+    name   = "Service"
+    values = ["Amazon Lightsail"]
+  }
+
   notification {
     comparison_operator = "GREATER_THAN"
-    threshold           = 100
+    threshold           = 80
     threshold_type      = "PERCENTAGE"
-    notification_type   = "FORECASTED"
+    notification_type   = "ACTUAL"
 
     subscriber_sns_topic_arns = [aws_sns_topic.lightsail_alerts.arn]
   }
