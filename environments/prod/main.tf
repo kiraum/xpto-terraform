@@ -52,10 +52,10 @@ module "billing_report" {
   enable_email_notification = true
   enable_slack_notification = true
   slack_webhook_url         = var.slack_webhook_url
-  daily_cost_threshold      = "0.15"
-  weekly_cost_threshold     = "1.00"
-  monthly_cost_threshold    = "5.00"
-  yearly_cost_threshold     = "60.00"
+  daily_cost_threshold      = "0.50"
+  weekly_cost_threshold     = "3.00"
+  monthly_cost_threshold    = "12.00"
+  yearly_cost_threshold     = "134.00"
 }
 
 
@@ -339,7 +339,7 @@ module "lightsail_ansiv" {
   source = "../../modules/lightsail_ansiv"
 
   container_name       = "ansiv"
-  container_image      = ":ansiv.resume.7"
+  container_image      = ":ansiv.resume.9"
   availability_zone    = "${var.aws_region}a"
   bundle_id            = "nano"
   custom_domain_name   = ["ansiv.xpto.it", "ansiv.kiraum.it"]

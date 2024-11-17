@@ -29,7 +29,7 @@ resource "aws_lightsail_container_service_deployment_version" "ansiv" {
     container_name = var.container_name
     image          = var.container_image
 
-    command = ["serve", "file", "/app/resume.json", "--port", "8080"]
+    command = ["serve", "web", "https://raw.githubusercontent.com/kiraum/xpto-terraform/refs/heads/main/modules/static_website/content/resume/resume.json"]
 
     ports = {
       8080 = "HTTP"
