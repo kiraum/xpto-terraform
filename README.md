@@ -83,6 +83,11 @@ This project is designed to leverage the AWS Free Tier as much as possible:
 - DynamoDB tables use on-demand capacity to minimize costs
 - CloudWatch logs have a 7-day retention period to reduce storage costs
 
+## Notes
+
+### set credentials (and unset after push image)
+aws lightsail push-container-image --service-name ansiv --label resume --image ghcr.io/alexpovel/ancv
+
 ## Contributing
 
 Please refer to the `.pre-commit-config.yaml` file for code style and linting requirements before submitting pull requests.
