@@ -301,7 +301,125 @@ module "route53" {
           ttl     = 300
           records = [module.lightsail_ansiv.domain_validation_records["ansiv.xpto.it"].value]
         }
-
+      ]
+    },
+    "xpto_io" = {
+      domain_name   = "xpto.io"
+      comment       = "xpto.io hosted zone"
+      enable_dnssec = true
+      records = [
+        # A record for root domain
+        {
+          name = ""
+          type = "A"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # AAAA record for root domain
+        {
+          name = ""
+          type = "AAAA"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # A record for www domain
+        {
+          name = "www"
+          type = "A"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # AAAA record for www domain
+        {
+          name = "www"
+          type = "AAAA"
+          alias = {
+            name                   = "dpop20p5u4112.cloudfront.net"
+            zone_id                = "Z2FDTNDATAQYW2"
+            evaluate_target_health = false
+          }
+        },
+        # DS record
+        {
+          name    = "www"
+          type    = "DS"
+          ttl     = 300
+          records = ["43125 13 2 78CE52B953F03915935782AFD14DCD2A43D2BFD4ABD94056568A1E21B9D474D3"]
+        },
+        # TLSA record
+        {
+          name    = "_443._tcp"
+          type    = "TXT"
+          ttl     = 300
+          records = ["3 1 1 ${local.tlsa_hash_xpto_it}"]
+        },
+        # MX records for email routing
+        {
+          name    = ""
+          type    = "MX"
+          ttl     = 300
+          records = ["10 mail.protonmail.ch", "20 mailsec.protonmail.ch"]
+        },
+        # TXT records for various verifications and SPF
+        {
+          name = ""
+          type = "TXT"
+          ttl  = 300
+          records = [
+            # xpto.io
+            "protonmail-verification=153bcda22041823b28c81094503b81ae0dcb1e3b",
+            "v=spf1 include:_spf.protonmail.ch ~all"
+          ]
+        },
+        # DMARC record
+        {
+          name    = "_dmarc"
+          type    = "TXT"
+          ttl     = 300
+          records = ["v=DMARC1; p=quarantine"]
+        },
+        # DKIM records for ProtonMail
+        {
+          name    = "protonmail._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail.domainkey.d3m6asxybpte3tu5js3kkqukmw7lwjn5y4kioct4nfcs5kqxohsja.domains.proton.ch."]
+        },
+        {
+          name    = "protonmail2._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail2.domainkey.d3m6asxybpte3tu5js3kkqukmw7lwjn5y4kioct4nfcs5kqxohsja.domains.proton.ch."]
+        },
+        {
+          name    = "protonmail3._domainkey"
+          type    = "CNAME"
+          ttl     = 300
+          records = ["protonmail3.domainkey.d3m6asxybpte3tu5js3kkqukmw7lwjn5y4kioct4nfcs5kqxohsja.domains.proton.ch."]
+        },
+        # lightsail
+        {
+          name    = "ansiv"
+          type    = "CNAME"
+          ttl     = 300
+          records = [module.lightsail_ansiv.container_url]
+        },
+        # lightsail cert
+        {
+          name    = module.lightsail_ansiv.domain_validation_records["ansiv.xpto.io"].name
+          type    = module.lightsail_ansiv.domain_validation_records["ansiv.xpto.io"].type
+          ttl     = 300
+          records = [module.lightsail_ansiv.domain_validation_records["ansiv.xpto.io"].value]
+        }
       ]
     }
   }
@@ -318,7 +436,7 @@ module "static_website" {
   source = "../../modules/static_website"
 
   bucket_name            = "xpto-static-website-bucket"
-  domain_names           = ["xpto.it", "kiraum.it"]
+  domain_names           = ["xpto.it", "kiraum.it", "xpto.io"]
   cloudfront_price_class = "PriceClass_100"
 
   tags = {
@@ -339,9 +457,9 @@ module "lightsail_ansiv" {
   source = "../../modules/lightsail_ansiv"
 
   container_name       = "ansiv"
-  container_image      = ":ansiv.resume.9"
+  container_image      = ":ansiv.resume.10"
   availability_zone    = "${var.aws_region}a"
   bundle_id            = "nano"
-  custom_domain_name   = ["ansiv.xpto.it", "ansiv.kiraum.it"]
+  custom_domain_name   = ["ansiv.xpto.it", "ansiv.kiraum.it", "ansiv.xpto.io"]
   monthly_budget_limit = "10"
 }
